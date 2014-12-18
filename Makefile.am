@@ -11,9 +11,9 @@ lib_LTLIBRARIES = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
 
 library_include_aes_mindir=$(includedir)/@PACKAGE_NAME@-@PACKAGE_VERSION@
 library_include_aes_min_HEADERS = aes.h
-lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES = aes.c
-lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES += aes-sbox.c aes-mul.c aes-inv.c
-#lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES += aes-sbox-small.c
+lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES = aes.c aes-mul.c aes-inv.c
+#lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES += aes-sbox.c
+lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES += aes-sbox-small.c
 lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_SOURCES += aes-sbox.h aes-mul.h aes-mul2.h aes-inv.h
 lib@PACKAGE_NAME@_@PACKAGE_VERSION@_la_LDFLAGS = -version-info @LIB_SO_VERSION@
 

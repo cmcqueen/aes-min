@@ -23,7 +23,7 @@ static const uint8_t aes_sbox_table[256u] =
 };
 
 
-static inline uint8_t aes_sbox(uint8_t a)
+uint8_t aes_sbox(uint8_t a)
 {
     return aes_sbox_table[a];
 }
