@@ -1,13 +1,37 @@
 
 #include "aes.h"
 #include "aes-sbox.h"
+#include "aes-shift-rows.h"
+#include "aes-mix-columns.h"
 #include "aes-mul2.h"
 
 #include <string.h>
 
+static void aes_add_round_key(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_round_key[AES_BLOCK_SIZE])
+{
+    uint_fast8_t    i;
+
+    for (i = 0; i < AES_BLOCK_SIZE; ++i)
+    {
+        p_block[i] ^= p_round_key[i];
+    }
+}
+
 void aes128_encrypt(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key_schedule[AES128_KEY_SCHEDULE_SIZE])
 {
+    uint_fast8_t    round;
 
+    aes_add_round_key(p_block, p_key_schedule);
+    for (round = 1; round < AES128_NUM_ROUNDS; ++round)
+    {
+        aes_sbox_apply_block(p_block);
+        aes_shift_rows(p_block);
+        aes_mix_columns(p_block);
+        aes_add_round_key(p_block, &p_key_schedule[round * AES_BLOCK_SIZE]);
+    }
+    aes_sbox_apply_block(p_block);
+    aes_shift_rows(p_block);
+    aes_add_round_key(p_block, &p_key_schedule[round * AES_BLOCK_SIZE]);
 }
 
 void aes128_decrypt(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key_schedule[AES128_KEY_SCHEDULE_SIZE])
