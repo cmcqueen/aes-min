@@ -10,7 +10,9 @@
 #define AES_COLUMN_SIZE             4u
 #define AES_NUM_COLUMNS             4u
 
-#define AES128_NUM_ROUNDS           99u // TODO: set this correctly
+#define AES_KEY_SCHEDULE_WORD_SIZE  4u
+
+#define AES128_NUM_ROUNDS           10u
 #define AES128_KEY_SIZE             16u
 #define AES128_KEY_SCHEDULE_SIZE    (AES_BLOCK_SIZE * (AES128_NUM_ROUNDS + 1u))  // TODO: set this correctly
 
