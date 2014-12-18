@@ -7,6 +7,8 @@
 
 
 #define AES_BLOCK_SIZE              16u
+#define AES_COLUMN_SIZE             4u
+#define AES_NUM_COLUMNS             4u
 
 #define AES128_NUM_ROUNDS           99u // TODO: set this correctly
 #define AES128_KEY_SIZE             16u
