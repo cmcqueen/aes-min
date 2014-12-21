@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #define AES_REDUCE_BYTE         0x1Bu
+#define AES_2_INVERSE           141u
 
 #if 0
 
@@ -36,6 +37,16 @@ static inline uint8_t aes_mul2(uint8_t a)
     return result;
 }
 
+static inline uint8_t aes_div2(uint8_t a)
+{
+    uint8_t result;
+
+    result = a >> 1u;
+    if (a & 1u)
+        result ^= AES_2_INVERSE;
+    return result;
+}
+
 #elif 0
 
 /* This hopefully has fixed timing, although inspection
@@ -47,6 +58,13 @@ static inline uint8_t aes_mul2(uint8_t a)
     return (a << 1u) ^ reduce[a >= 0x80u];
 }
 
+static inline uint8_t aes_div2(uint8_t a)
+{
+    static const uint8_t reduce[2] = { 0, AES_2_INVERSE };
+
+    return (a >> 1u) ^ reduce[a & 1u];
+}
+
 #else
 
 /* This hopefully has fixed timing, although inspection
@@ -54,6 +72,11 @@ static inline uint8_t aes_mul2(uint8_t a)
 static inline uint8_t aes_mul2(uint8_t a)
 {
     return (a << 1u) ^ ((-(a >= 0x80u)) & AES_REDUCE_BYTE);
+}
+
+static inline uint8_t aes_div2(uint8_t a)
+{
+    return (a >> 1u) ^ ((-(a & 1u)) & AES_2_INVERSE);
 }
 
 #endif

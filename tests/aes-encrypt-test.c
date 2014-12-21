@@ -43,7 +43,13 @@ static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
     if (memcmp(block, p_encrypted, AES_BLOCK_SIZE) != 0)
         return 0;
 
+#if 0
     aes128_decrypt(block, key_schedule);
+#else
+    memcpy(key_work, p_key, AES128_KEY_SIZE);
+    aes128_otfks_decrypt_start_key(key_work);
+    aes128_otfks_decrypt(block, key_work);
+#endif
 
     printf("Decrypt %s output:\n", p_id);
     print_block_hex(block, AES_BLOCK_SIZE);
