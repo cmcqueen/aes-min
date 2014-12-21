@@ -8,13 +8,13 @@
 void aes128_key_schedule(uint8_t p_key_schedule[AES128_KEY_SCHEDULE_SIZE], const uint8_t p_key[AES128_KEY_SIZE])
 {
     uint_fast8_t    round;
-    uint8_t       * p_key_0 = p_key_schedule;
-    uint8_t         temp_word[AES_KEY_SCHEDULE_WORD_SIZE];
+    uint8_t       * p_key_0 = p_key_schedule + AES128_KEY_SIZE;
     uint8_t         temp_byte;
     uint8_t         rcon = 1u;
 
-    memcpy(p_key_0, p_key, AES128_KEY_SIZE);
-    p_key_0 += AES128_KEY_SIZE;
+    /* Initial part of key schedule is simply the key copied verbatim. */
+    memcpy(p_key_schedule, p_key, AES128_KEY_SIZE);
+
     for (round = 0; round < (AES128_KEY_SCHEDULE_SIZE - AES128_KEY_SIZE) / AES_KEY_SCHEDULE_WORD_SIZE; ++round)
     {
         memcpy(p_key_0, p_key_0 - AES_KEY_SCHEDULE_WORD_SIZE, AES_KEY_SCHEDULE_WORD_SIZE);

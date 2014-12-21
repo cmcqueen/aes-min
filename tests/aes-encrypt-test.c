@@ -27,11 +27,17 @@ static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
     size_t  i;
     uint8_t key_schedule[AES128_KEY_SCHEDULE_SIZE];
     uint8_t block[AES_BLOCK_SIZE];
+    uint8_t key_work[AES128_KEY_SIZE];
 
     aes128_key_schedule(key_schedule, p_key);
 
     memcpy(block, p_plain, AES_BLOCK_SIZE);
+#if 0
     aes128_encrypt(block, key_schedule);
+#else
+    memcpy(key_work, p_key, AES128_KEY_SIZE);
+    aes128_otfks_encrypt(block, key_work);
+#endif
 
     printf("Encrypt %s output:\n", p_id);
     print_block_hex(&block[i], AES_BLOCK_SIZE);

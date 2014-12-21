@@ -40,5 +40,5 @@ aes_inv_test_CFLAGS = $(AM_CFLAGS)
 aes_key_schedule_test_SOURCES = tests/aes-key-schedule-test.c  aes-print-block.h
 aes_key_schedule_test_LDADD = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
 
-aes_encrypt_test_SOURCES = tests/aes-encrypt-test.c  aes-print-block.h
+aes_encrypt_test_SOURCES = tests/aes-encrypt-test.c aes-otfks-encrypt.c aes-print-block.h
 aes_encrypt_test_LDADD = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
