@@ -47,5 +47,12 @@ AS_IF([test "x$with_cxxtest" = "xyes"], [
 ])
 AM_CONDITIONAL([WITH_CXXTEST], [test "x$with_cxxtest" = "xyes"])
 
-AC_OUTPUT
+AC_ARG_ENABLE([sbox-small],
+    AS_HELP_STRING([--enable-sbox-small], [Enable small S-box implementation]))
 
+AS_IF([test "x$enable_small_sbox" = "xyes"], [
+    AC_DEFINE([ENABLE_SMALL_SBOX], [1], [Enable small S-box implementation])
+])
+AM_CONDITIONAL([ENABLE_SMALL_SBOX], [test "x$enable_small_sbox" = "xyes"])
+
+AC_OUTPUT
