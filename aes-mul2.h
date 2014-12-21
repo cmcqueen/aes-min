@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 
+#define AES_REDUCE_BYTE         0x1Bu
+
 #if 0
 
 /* This is probably the most straight-forward expression of the algorithm.
@@ -29,8 +31,8 @@ static inline uint8_t aes_mul2(uint8_t a)
     uint8_t result;
 
     result = a << 1u;
-    if (a & 0x80)
-        result ^= 0x1B;
+    if (a & 0x80u)
+        result ^= AES_REDUCE_BYTE;
     return result;
 }
 
@@ -40,9 +42,9 @@ static inline uint8_t aes_mul2(uint8_t a)
  * of compiled code would be needed to confirm it. */
 static inline uint8_t aes_mul2(uint8_t a)
 {
-    static const uint8_t reduce[2] = { 0, 0x1B };
+    static const uint8_t reduce[2] = { 0, AES_REDUCE_BYTE };
 
-    return (a << 1u) ^ reduce[a >= 0x80];
+    return (a << 1u) ^ reduce[a >= 0x80u];
 }
 
 #else
@@ -51,7 +53,7 @@ static inline uint8_t aes_mul2(uint8_t a)
  * of compiled code would be needed to confirm it. */
 static inline uint8_t aes_mul2(uint8_t a)
 {
-    return (a << 1u) ^ ((-(a >= 0x80)) & 0x1B);
+    return (a << 1u) ^ ((-(a >= 0x80u)) & AES_REDUCE_BYTE);
 }
 
 #endif

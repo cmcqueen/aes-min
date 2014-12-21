@@ -20,7 +20,6 @@ uint8_t aes_inv(uint8_t a)
     uint_fast8_t i;
     uint_fast8_t prev_value_i;
     uint8_t prev_values[PREV_VALUE_I_MAX - PREV_VALUE_I_MIN + 1u];
-    uint8_t result = 0;
     
     for (i = 0; i < dimof(addition_chain_idx); i++)
     {

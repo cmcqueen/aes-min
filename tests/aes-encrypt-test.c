@@ -24,13 +24,11 @@ static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
                               const uint8_t p_encrypted[AES_BLOCK_SIZE],
                               const char * p_id)
 {
-    size_t  i;
     uint8_t key_schedule[AES128_KEY_SCHEDULE_SIZE];
     uint8_t block[AES_BLOCK_SIZE];
     uint8_t key_work[AES128_KEY_SIZE];
 
     aes128_key_schedule(key_schedule, p_key);
-
     memcpy(block, p_plain, AES_BLOCK_SIZE);
 #if 0
     aes128_encrypt(block, key_schedule);
@@ -40,7 +38,7 @@ static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
 #endif
 
     printf("Encrypt %s output:\n", p_id);
-    print_block_hex(&block[i], AES_BLOCK_SIZE);
+    print_block_hex(block, AES_BLOCK_SIZE);
 
     if (memcmp(block, p_encrypted, AES_BLOCK_SIZE) != 0)
         return 0;
@@ -48,7 +46,7 @@ static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
     aes128_decrypt(block, key_schedule);
 
     printf("Decrypt %s output:\n", p_id);
-    print_block_hex(&block[i], AES_BLOCK_SIZE);
+    print_block_hex(block, AES_BLOCK_SIZE);
     printf("\n");
 
     return (memcmp(block, p_plain, AES_BLOCK_SIZE) == 0);
