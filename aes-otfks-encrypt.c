@@ -7,10 +7,21 @@
 #include "aes-mix-columns.h"
 #include "aes-mul2.h"
 
+#define AES_KEY_SCHEDULE_FIRST_RCON     1u
+
+/* AES-128 encryption with on-the-fly key schedule calculation.
+ *
+ * p_block points to a 16-byte buffer of plain data to encrypt. Encryption
+ * is done in-place in that buffer.
+ * p_key must initially point to a starting key state for encryption, which is
+ * simply the 16 bytes of the AES-128 key. Key schedule is calculated on-the-
+ * fly in that buffer, so the buffer must re-initialised for subsequent
+ * encryption operations.
+ */
 void aes128_otfks_encrypt(uint8_t p_block[AES_BLOCK_SIZE], uint8_t p_key[AES128_KEY_SIZE])
 {
     uint_fast8_t    round;
-    uint8_t         rcon = 1u;
+    uint8_t         rcon = AES_KEY_SCHEDULE_FIRST_RCON;
 
     aes_add_round_key(p_block, p_key);
     for (round = 1; round < AES128_NUM_ROUNDS; ++round)

@@ -5,6 +5,13 @@
 #include "aes-shift-rows.h"
 #include "aes-mix-columns.h"
 
+/* AES-128 decryption.
+ *
+ * p_block points to a 16-byte buffer of encrypted data to decrypt. Decryption
+ * is done in-place in that buffer.
+ * p_key_schedule points to a pre-calculated key schedule, which can be
+ * calculated by aes128_key_schedule().
+ */
 void aes128_decrypt(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key_schedule[AES128_KEY_SCHEDULE_SIZE])
 {
     uint_fast8_t    round;

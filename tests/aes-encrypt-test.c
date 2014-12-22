@@ -22,20 +22,33 @@ static const uint8_t encrypt_0_ref[AES128_KEY_SCHEDULE_SIZE] =
 static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
                               const uint8_t p_plain[AES_BLOCK_SIZE],
                               const uint8_t p_encrypted[AES_BLOCK_SIZE],
-                              const char * p_id)
+                              const char * p_id, bool use_otfks)
 {
     uint8_t key_schedule[AES128_KEY_SCHEDULE_SIZE];
     uint8_t block[AES_BLOCK_SIZE];
+    uint8_t otfks_decrypt_start_key[AES128_KEY_SIZE];
     uint8_t key_work[AES128_KEY_SIZE];
 
-    aes128_key_schedule(key_schedule, p_key);
+    if (use_otfks)
+    {
+        memcpy(otfks_decrypt_start_key, p_key, AES128_KEY_SIZE);
+        aes128_otfks_decrypt_start_key(otfks_decrypt_start_key);
+    }
+    else
+    {
+        aes128_key_schedule(key_schedule, p_key);
+    }
+
     memcpy(block, p_plain, AES_BLOCK_SIZE);
-#if 0
-    aes128_encrypt(block, key_schedule);
-#else
-    memcpy(key_work, p_key, AES128_KEY_SIZE);
-    aes128_otfks_encrypt(block, key_work);
-#endif
+    if (use_otfks)
+    {
+        memcpy(key_work, p_key, AES128_KEY_SIZE);
+        aes128_otfks_encrypt(block, key_work);
+    }
+    else
+    {
+        aes128_encrypt(block, key_schedule);
+    }
 
     printf("Encrypt %s output:\n", p_id);
     print_block_hex(block, AES_BLOCK_SIZE);
@@ -43,13 +56,15 @@ static bool encrypt_test(const uint8_t p_key[AES128_KEY_SIZE],
     if (memcmp(block, p_encrypted, AES_BLOCK_SIZE) != 0)
         return 0;
 
-#if 0
-    aes128_decrypt(block, key_schedule);
-#else
-    memcpy(key_work, p_key, AES128_KEY_SIZE);
-    aes128_otfks_decrypt_start_key(key_work);
-    aes128_otfks_decrypt(block, key_work);
-#endif
+    if (use_otfks)
+    {
+        memcpy(key_work, otfks_decrypt_start_key, AES128_KEY_SIZE);
+        aes128_otfks_decrypt(block, key_work);
+    }
+    else
+    {
+        aes128_decrypt(block, key_schedule);
+    }
 
     printf("Decrypt %s output:\n", p_id);
     print_block_hex(block, AES_BLOCK_SIZE);
@@ -65,7 +80,10 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    is_okay = encrypt_test(key_0, plain_0, encrypt_0_ref, "0");
+    is_okay = encrypt_test(key_0, plain_0, encrypt_0_ref, "0", false);
+    if (!is_okay)
+        return 1;
+    is_okay = encrypt_test(key_0, plain_0, encrypt_0_ref, "0 OTFKS", true);
     if (!is_okay)
         return 1;
     return 0;

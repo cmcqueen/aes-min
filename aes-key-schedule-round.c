@@ -2,6 +2,13 @@
 #include "aes.h"
 #include "aes-sbox.h"
 
+/* This is used for aes128_otfks_encrypt(), on-the-fly key schedule encryption.
+ * It is also used by aes128_otfks_decrypt_start_key() to calculate the
+ * starting key state for decryption with on-the-fly key schedule calculation.
+ * rcon for the round must be provided, out of the sequence:
+ *     1, 2, 4, 8, 16, 32, 64, 128, 27, 54
+ * Subsequent values can be calculated with aes_mul2().
+ */
 void aes128_key_schedule_round(uint8_t p_key[AES128_KEY_SIZE], uint8_t rcon)
 {
     uint_fast8_t    round;

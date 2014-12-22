@@ -5,14 +5,16 @@
 
 #include <string.h>
 
+#define AES_KEY_SCHEDULE_FIRST_RCON     1u
+
 void aes128_key_schedule(uint8_t p_key_schedule[AES128_KEY_SCHEDULE_SIZE], const uint8_t p_key[AES128_KEY_SIZE])
 {
     uint_fast8_t    round;
     uint8_t       * p_key_0 = p_key_schedule + AES128_KEY_SIZE;
     uint8_t         temp_byte;
-    uint8_t         rcon = 1u;
+    uint8_t         rcon = AES_KEY_SCHEDULE_FIRST_RCON;
 
-    /* Initial part of key schedule is simply the key copied verbatim. */
+    /* Initial part of key schedule is simply the AES-128 key copied verbatim. */
     memcpy(p_key_schedule, p_key, AES128_KEY_SIZE);
 
     for (round = 0; round < (AES128_KEY_SCHEDULE_SIZE - AES128_KEY_SIZE) / AES_KEY_SCHEDULE_WORD_SIZE; ++round)
