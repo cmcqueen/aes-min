@@ -12,7 +12,7 @@ Normally the S-box implementation is by a simple 256-byte table look-up. An opti
 Testing
 -------
 
-This has had no testing so far.
+This has had minimal testing, by inspection of encryption/decryption of a few of the test vectors.
 
 
 [1]: http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
