@@ -14,6 +14,11 @@ Testing
 
 This has had minimal testing, by inspection of encryption/decryption of a few of the test vectors.
 
+License
+-------
+
+This code is released under the MIT license. See LICENSE.txt for details.
+
 
 [1]: http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 
