@@ -1,3 +1,12 @@
+/*****************************************************************************
+ * aes-otfks-decrypt.c
+ *
+ * AES-128 decryption with on-the-fly calculation of key schedule.
+ ****************************************************************************/
+
+/*****************************************************************************
+ * Includes
+ ****************************************************************************/
 
 #include "aes.h"
 #include "aes-add-round-key.h"
@@ -7,9 +16,16 @@
 #include "aes-mix-columns.h"
 #include "aes-mul2.h"       /* For aes_mul2() and aes_div2() */
 
+/*****************************************************************************
+ * Defines
+ ****************************************************************************/
+
 #define AES_KEY_SCHEDULE_FIRST_RCON     1u
 #define AES128_KEY_SCHEDULE_LAST_RCON   54u
 
+/*****************************************************************************
+ * Functions
+ ****************************************************************************/
 
 /* This is used for aes128_otfks_decrypt(), on-the-fly key schedule decryption.
  * rcon for the round must be provided, out of the sequence:

@@ -1,6 +1,19 @@
+/*****************************************************************************
+ * aes-shift-rows-inv.c
+ *
+ * Implementation of AES decryption inverse shift-rows step.
+ ****************************************************************************/
+
+/*****************************************************************************
+ * Includes
+ ****************************************************************************/
 
 #include "aes.h"
 #include "aes-shift-rows.h"
+
+/*****************************************************************************
+ * Functions
+ ****************************************************************************/
 
 void aes_shift_rows_inv(uint8_t p_block[AES_BLOCK_SIZE])
 {
@@ -30,4 +43,3 @@ void aes_shift_rows_inv(uint8_t p_block[AES_BLOCK_SIZE])
     p_block[2u * AES_COLUMN_SIZE + 3u] = p_block[3u * AES_COLUMN_SIZE + 3u];
     p_block[3u * AES_COLUMN_SIZE + 3u] = temp_byte;
 }
-

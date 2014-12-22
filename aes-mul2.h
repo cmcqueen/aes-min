@@ -1,4 +1,5 @@
-/* aes-mul2.h
+/*****************************************************************************
+ * aes-mul2.h
  *
  * aes_mul() multiplies by 2 in Galois field GF(2^8) with reduction
  * polynomial 0x11B.
@@ -11,14 +12,26 @@
  *       most-significant bit is set or clear (which determines whether the
  *       reduction polynomial is XORed into the result). It is necessary to
  *       inspect the compiled code on the target platform to determine this.
- */
+ ****************************************************************************/
 #ifndef AES_MUL2_H
 #define AES_MUL2_H
 
+/*****************************************************************************
+ * Includes
+ ****************************************************************************/
+
 #include <stdint.h>
+
+/*****************************************************************************
+ * Defines
+ ****************************************************************************/
 
 #define AES_REDUCE_BYTE         0x1Bu
 #define AES_2_INVERSE           141u
+
+/*****************************************************************************
+ * Inline functions
+ ****************************************************************************/
 
 #if 0
 

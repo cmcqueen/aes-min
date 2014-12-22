@@ -1,6 +1,19 @@
+/*****************************************************************************
+ * aes-shift-rows.c
+ *
+ * Implementation of AES encryption shift-rows step.
+ ****************************************************************************/
+
+/*****************************************************************************
+ * Includes
+ ****************************************************************************/
 
 #include "aes.h"
 #include "aes-shift-rows.h"
+
+/*****************************************************************************
+ * Functions
+ ****************************************************************************/
 
 void aes_shift_rows(uint8_t p_block[AES_BLOCK_SIZE])
 {
@@ -30,4 +43,3 @@ void aes_shift_rows(uint8_t p_block[AES_BLOCK_SIZE])
     p_block[1u * AES_COLUMN_SIZE + 3u] = p_block[0  * AES_COLUMN_SIZE + 3u];
     p_block[0  * AES_COLUMN_SIZE + 3u] = temp_byte;
 }
-

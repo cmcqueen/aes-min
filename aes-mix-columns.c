@@ -1,9 +1,22 @@
+/*****************************************************************************
+ * aes-mix-columns.c
+ *
+ * Implementation of AES encryption mix-columns step.
+ ****************************************************************************/
+
+/*****************************************************************************
+ * Includes
+ ****************************************************************************/
 
 #include "aes.h"
 #include "aes-mix-columns.h"
 #include "aes-mul2.h"
 
 #include <string.h>
+
+/*****************************************************************************
+ * Functions
+ ****************************************************************************/
 
 void aes_mix_columns(uint8_t p_block[AES_BLOCK_SIZE])
 {
@@ -28,4 +41,3 @@ void aes_mix_columns(uint8_t p_block[AES_BLOCK_SIZE])
         memcpy(&p_block[i * AES_COLUMN_SIZE], temp_column, AES_COLUMN_SIZE);
     }
 }
-

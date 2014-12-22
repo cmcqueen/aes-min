@@ -1,6 +1,20 @@
+/*****************************************************************************
+ * aes-key-schedule-round.c
+ *
+ * In-place calculation of the next round of the AES-128 key schedule.
+ * This is used for encryption with on-the-fly key schedule calculation.
+ ****************************************************************************/
+
+/*****************************************************************************
+ * Includes
+ ****************************************************************************/
 
 #include "aes.h"
 #include "aes-sbox.h"
+
+/*****************************************************************************
+ * Functions
+ ****************************************************************************/
 
 /* This is used for aes128_otfks_encrypt(), on-the-fly key schedule encryption.
  * It is also used by aes128_otfks_decrypt_start_key() to calculate the
