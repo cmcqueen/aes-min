@@ -1,6 +1,7 @@
 
 #include "aes-sbox.h"
 #include "aes-rotate.h"
+#include "aes-inv.h"
 
 
 uint8_t aes_sbox(uint8_t a)
