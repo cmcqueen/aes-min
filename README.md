@@ -12,7 +12,7 @@ Normally the S-box implementation is by a simple 256-byte table look-up. An opti
 Testing
 -------
 
-This has had minimal testing, by inspection of encryption/decryption of a few of the test vectors.
+This has had minimal testing, by inspection of encryption/decryption of a few of the [test vectors][2].
 
 License
 -------
@@ -21,4 +21,4 @@ This code is released under the MIT license. See LICENSE.txt for details.
 
 
 [1]: http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
-
+[2]: http://csrc.nist.gov/groups/STM/cavp/documents/aes/KAT_AES.zip
