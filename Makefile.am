@@ -30,9 +30,9 @@ pkgconfig_DATA = @PACKAGE_NAME@.pc
 #######################################
 # Tests
 
-TESTS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test
+TESTS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test aes-vectors-test
 
-check_PROGRAMS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test
+check_PROGRAMS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test aes-vectors-test
 
 aes_sbox_test_SOURCES = tests/aes-sbox-test.c  aes-print-block.h
 aes_sbox_test_LDADD = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
@@ -46,3 +46,6 @@ aes_key_schedule_test_LDADD = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
 
 aes_encrypt_test_SOURCES = tests/aes-encrypt-test.c aes-print-block.h
 aes_encrypt_test_LDADD = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
+
+aes_vectors_test_SOURCES = tests/aes-vectors-test.c tests/aes-test-vectors.h aes-print-block.h
+aes_vectors_test_LDADD = lib@PACKAGE_NAME@-@PACKAGE_VERSION@.la
