@@ -12,7 +12,20 @@ Normally the S-box implementation is by a simple 256-byte table look-up. An opti
 Testing
 -------
 
-This has had minimal testing, by inspection of encryption/decryption of a few of the [test vectors][2].
+Test programs are included, which test the S-box implementation and encrypt and decrypt operations.
+
+Encryption and decryption are tested against some files in the official [test vectors][2]. Specifically, the ECB mode test files were used, for AES-128. These files:
+
+* `ECBGFSbox128.rsp`
+* `ECBKeySbox128.rsp`
+* `ECBVarKey128.rsp`
+* `ECBVarTxt128.rsp`
+
+The test vectors were parsed and converted to C data structures using a Python program.
+
+When using autotools, run the tests via:
+
+    make check
 
 License
 -------
