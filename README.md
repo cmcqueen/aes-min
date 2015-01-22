@@ -30,8 +30,9 @@ When using autotools, run the tests via:
 License
 -------
 
-This code is released under the MIT license. See LICENSE.txt for details.
+This code is released under the MIT license. See [`LICENSE.txt`][3] for details.
 
 
 [1]: http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 [2]: http://csrc.nist.gov/groups/STM/cavp/documents/aes/KAT_AES.zip
+[3]: LICENSE.txt
