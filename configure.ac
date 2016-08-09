@@ -2,6 +2,11 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
 AC_INIT([aes-min], [0.1.0]) #set project name and version
+
+# Put autotools auxiliary files in subdirectories to reduce clutter:
+AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_MACRO_DIR([m4])
+
 AC_PROG_CC
 # C++ used for testing with cxxtest
 AC_PROG_CXX
@@ -10,10 +15,6 @@ AC_PROG_CXX
 
 # Put configuration results here, so we can easily #include them:
 AC_CONFIG_HEADERS([config.h])
-
-# Put autotools auxiliary files in subdirectories to reduce clutter:
-AC_CONFIG_AUX_DIR([build-aux])
-AC_CONFIG_MACRO_DIR([m4])
 
 # library version as current:revision:age
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
