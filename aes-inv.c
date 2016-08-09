@@ -16,12 +16,7 @@
  * Defines
  ****************************************************************************/
 
-#ifndef dimof
-#define dimof(array)    (sizeof(array) / sizeof(array[0]))
-#endif
-
-#define PREV_VALUE_I_MIN    1u
-#define PREV_VALUE_I_MAX    3u
+#define CHAIN_LEN           11u
 
 /*****************************************************************************
  * Functions
@@ -32,21 +27,22 @@
  * 11 multiplies.
  * There are many addition chains of length 11 for 254. This one was picked
  * because it has the most multiplies by the previous value, and least
- * references to earlier history, minimising size of prev_values[].
+ * references to earlier history, which in theory could minimise the size of
+ * prev_values[]. However, in the end we do the simplest possible
+ * implementation of the algorithm to minimise code size (because aes_inv() is
+ * used to achieve smallest possible S-box implementation), so it doesn't
+ * really matter which addition chain we pick.
  */
 uint8_t aes_inv(uint8_t a)
 {
-    static const uint8_t addition_chain_idx[] = { 0, 1, 1, 3, 4, 3, 6, 7, 3, 9, 1 };
+    static const uint8_t addition_chain_idx[CHAIN_LEN] = { 0, 1, 1, 3, 4, 3, 6, 7, 3, 9, 1 };
     uint_fast8_t    i;
-    uint_fast8_t    prev_value_i;
-    uint8_t         prev_values[PREV_VALUE_I_MAX - PREV_VALUE_I_MIN + 1u];
-    
-    for (i = 0; i < dimof(addition_chain_idx); i++)
+    uint8_t         prev_values[CHAIN_LEN];
+
+    for (i = 0; i < CHAIN_LEN; i++)
     {
-        prev_value_i = addition_chain_idx[i];
-        a = aes_mul(a, (i == prev_value_i) ? a : prev_values[prev_value_i - PREV_VALUE_I_MIN]);
-        if (PREV_VALUE_I_MIN - 1u <= i && i <= PREV_VALUE_I_MAX - 1u)
-            prev_values[i + 1u - PREV_VALUE_I_MIN] = a;
+        prev_values[i] = a;
+        a = aes_mul(a, prev_values[addition_chain_idx[i]]);
     }
     return a;
 }
