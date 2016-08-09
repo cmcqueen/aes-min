@@ -1,7 +1,7 @@
 aes-min
 =======
 
-Minimal AES ([Wikipedia][1]) encryption.
+Minimal AES-128 ([Wikipedia][1]) encryption.
 
 This aims to be suitable for small embedded systems with limited RAM and ROM.
 
