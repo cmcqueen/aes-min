@@ -8,8 +8,6 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
-# C++ used for testing with cxxtest
-AC_PROG_CXX
 
 #AC_CANONICAL_SYSTEM
 
