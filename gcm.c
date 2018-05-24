@@ -14,8 +14,7 @@
  * Defines
  ****************************************************************************/
 
-/* Set to sizeof(uint128_element_t). */
-#define UINT128_ELEMENT_SIZE		4u
+#define UINT128_ELEMENT_SIZE		sizeof(uint128_element_t)
 
 #define UINT128_ELEMENT_SIZE_BITS   (8u * UINT128_ELEMENT_SIZE)
 #define UINT128_NUM_ELEMENTS        (AES_BLOCK_SIZE / UINT128_ELEMENT_SIZE)
@@ -24,8 +23,10 @@
  * Types
  ****************************************************************************/
 
-/* Keep in sync with UINT128_ELEMENT_SIZE. */
-typedef uint32_t uint128_element_t;
+/* Set an element type that is efficient on the target platform.
+ * unsigned int is a reasonable default.
+ * Ensure UINT128_ELEMENT_SIZE is suitably set to match. */
+typedef unsigned int uint128_element_t;
 
 typedef struct
 {
@@ -48,29 +49,31 @@ void uint128_struct_mul2(uint128_struct_t * p);
 void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE])
 {
     uint128_struct_t    a;
-    uint128_struct_t    b;
     uint128_struct_t    result = { 0 };
+#if 0
     uint128_struct_t    zeros = { 0 };
+#endif
     uint_fast8_t        i;
     uint128_element_t   j_bit;
 
-    uint128_struct_from_bytes(&a, p_block);
-    uint128_struct_from_bytes(&b, p_key);
+    uint128_struct_from_bytes(&a, p_key);
 
-    for (i = 0; i < UINT128_NUM_ELEMENTS; i++)
+    for (i = 0; i < AES_BLOCK_SIZE; i++)
     {
-        for (j_bit = (1u << (UINT128_ELEMENT_SIZE_BITS - 1u)); j_bit != 0; j_bit >>= 1)
+        for (j_bit = (1u << 7u); j_bit != 0; j_bit >>= 1)
         {
-            if (a.element[i] & j_bit)
+            if (p_block[i] & j_bit)
             {
-                uint128_struct_xor(&result, &b);
+                uint128_struct_xor(&result, &a);
             }
+#if 0
             else
             {
                 /* This does nothing except keep timing constant, to avoid timing side-channel attacks. */
                 uint128_struct_xor(&result, &zeros);
             }
-            uint128_struct_mul2(&b);
+#endif
+            uint128_struct_mul2(&a);
         }
     }
     uint128_struct_to_bytes(p_block, &result);
