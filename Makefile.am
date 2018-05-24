@@ -21,6 +21,7 @@ else
 lib@PACKAGE_NAME@_la_SOURCES += aes-sbox.c aes-sbox-inv.c
 endif
 lib@PACKAGE_NAME@_la_SOURCES += aes-sbox.h aes-shift-rows.h aes-mix-columns.h aes-mul.h aes-mul2.h aes-inv.h aes-rotate.h aes-add-round-key.h aes-key-schedule-round.h
+lib@PACKAGE_NAME@_la_SOURCES += gcm.c gcm.h
 lib@PACKAGE_NAME@_la_LDFLAGS = -version-info @LIB_SO_VERSION@
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -30,9 +31,9 @@ pkgconfig_DATA = @PACKAGE_NAME@.pc
 #######################################
 # Tests
 
-TESTS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test aes-vectors-test
+TESTS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test aes-vectors-test gcm-test
 
-check_PROGRAMS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test aes-vectors-test
+check_PROGRAMS = aes-sbox-test aes-inv-test aes-key-schedule-test aes-encrypt-test aes-vectors-test gcm-test
 
 aes_sbox_test_SOURCES = tests/aes-sbox-test.c  aes-print-block.h
 aes_sbox_test_LDADD = lib@PACKAGE_NAME@.la
@@ -49,3 +50,6 @@ aes_encrypt_test_LDADD = lib@PACKAGE_NAME@.la
 
 aes_vectors_test_SOURCES = tests/aes-vectors-test.c tests/aes-test-vectors.h aes-print-block.h
 aes_vectors_test_LDADD = lib@PACKAGE_NAME@.la
+
+gcm_test_SOURCES = tests/gcm-test.c gcm.h aes-print-block.h
+gcm_test_LDADD = lib@PACKAGE_NAME@.la
