@@ -50,6 +50,7 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
     uint128_struct_t    a;
     uint128_struct_t    b;
     uint128_struct_t    result = { 0 };
+    uint128_struct_t    zeros = { 0 };
     uint_fast8_t        i;
     uint128_element_t   j_bit;
 
@@ -63,6 +64,11 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
             if (a.element[i] & j_bit)
             {
                 uint128_struct_xor(&result, &b);
+            }
+            else
+            {
+                /* This does nothing except keep timing constant, to avoid timing side-channel attacks. */
+                uint128_struct_xor(&result, &zeros);
             }
             uint128_struct_mul2(&b);
         }
