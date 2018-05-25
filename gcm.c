@@ -58,9 +58,9 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
 
     uint128_struct_from_bytes(&a, p_key);
 
-    for (i = 0; i < AES_BLOCK_SIZE - 1u; i++)
+    for (i = AES_BLOCK_SIZE - 1u; i != 0; i--)
     {
-        for (j_bit = (1u << 7u); j_bit != 0; j_bit >>= 1)
+        for (j_bit = 1u; j_bit != 0; j_bit <<= 1u)
         {
             if (p_block[i] & j_bit)
             {
@@ -73,13 +73,13 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
                 uint128_struct_xor(&result, &zeros);
             }
 #endif
-            uint128_struct_mul2(&a);
+            uint128_struct_mul2(&result);
         }
     }
 
-    /* Slightly modified loop for i = AES_BLOCK_SIZE - 1, to avoid final
-     * unnecessary uint128_struct_mul2(&a). */
-    j_bit = (1u << 7u);
+    /* For i = 0, modify the point of the loop exit, to avoid final
+     * unnecessary uint128_struct_mul2(&result). */
+    j_bit = 1u;
     for (;;)
     {
         if (p_block[i] & j_bit)
@@ -93,13 +93,13 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
         }
 #endif
 
-        j_bit >>= 1;
+        j_bit <<= 1;
         if (j_bit == 0)
         {
             break;
         }
 
-        uint128_struct_mul2(&a);
+        uint128_struct_mul2(&result);
     }
     uint128_struct_to_bytes(p_block, &result);
 }
