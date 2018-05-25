@@ -50,9 +50,6 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
 {
     uint128_struct_t    a;
     uint128_struct_t    result = { 0 };
-#if 0
-    uint128_struct_t    zeros = { 0 };
-#endif
     uint_fast8_t        i;
     uint8_t             j_bit;
 
@@ -66,13 +63,6 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
             {
                 uint128_struct_xor(&result, &a);
             }
-#if 0
-            else
-            {
-                /* This does nothing except keep timing constant, to avoid timing side-channel attacks. */
-                uint128_struct_xor(&result, &zeros);
-            }
-#endif
             uint128_struct_mul2(&result);
         }
     }
@@ -86,21 +76,14 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
         {
             uint128_struct_xor(&result, &a);
         }
-#if 0
-        else
-        {
-            uint128_struct_xor(&result, &zeros);
-        }
-#endif
-
         j_bit <<= 1;
         if (j_bit == 0)
         {
             break;
         }
-
         uint128_struct_mul2(&result);
     }
+
     uint128_struct_to_bytes(p_block, &result);
 }
 
