@@ -10,6 +10,8 @@
 
 #include "gcm.h"
 
+#include <string.h>
+
 /*****************************************************************************
  * Defines
  ****************************************************************************/
@@ -36,13 +38,39 @@ typedef struct
 } uint128_struct_t;
 
 /*****************************************************************************
+ * Look-up tables
+ ****************************************************************************/
+
+const uint16_t mul256_reduce_table[256] =
+{
+    0x0000u, 0x01C2u, 0x0384u, 0x0246u, 0x0708u, 0x06CAu, 0x048Cu, 0x054Eu, 0x0E10u, 0x0FD2u, 0x0D94u, 0x0C56u, 0x0918u, 0x08DAu, 0x0A9Cu, 0x0B5Eu,
+    0x1C20u, 0x1DE2u, 0x1FA4u, 0x1E66u, 0x1B28u, 0x1AEAu, 0x18ACu, 0x196Eu, 0x1230u, 0x13F2u, 0x11B4u, 0x1076u, 0x1538u, 0x14FAu, 0x16BCu, 0x177Eu,
+    0x3840u, 0x3982u, 0x3BC4u, 0x3A06u, 0x3F48u, 0x3E8Au, 0x3CCCu, 0x3D0Eu, 0x3650u, 0x3792u, 0x35D4u, 0x3416u, 0x3158u, 0x309Au, 0x32DCu, 0x331Eu,
+    0x2460u, 0x25A2u, 0x27E4u, 0x2626u, 0x2368u, 0x22AAu, 0x20ECu, 0x212Eu, 0x2A70u, 0x2BB2u, 0x29F4u, 0x2836u, 0x2D78u, 0x2CBAu, 0x2EFCu, 0x2F3Eu,
+    0x7080u, 0x7142u, 0x7304u, 0x72C6u, 0x7788u, 0x764Au, 0x740Cu, 0x75CEu, 0x7E90u, 0x7F52u, 0x7D14u, 0x7CD6u, 0x7998u, 0x785Au, 0x7A1Cu, 0x7BDEu,
+    0x6CA0u, 0x6D62u, 0x6F24u, 0x6EE6u, 0x6BA8u, 0x6A6Au, 0x682Cu, 0x69EEu, 0x62B0u, 0x6372u, 0x6134u, 0x60F6u, 0x65B8u, 0x647Au, 0x663Cu, 0x67FEu,
+    0x48C0u, 0x4902u, 0x4B44u, 0x4A86u, 0x4FC8u, 0x4E0Au, 0x4C4Cu, 0x4D8Eu, 0x46D0u, 0x4712u, 0x4554u, 0x4496u, 0x41D8u, 0x401Au, 0x425Cu, 0x439Eu,
+    0x54E0u, 0x5522u, 0x5764u, 0x56A6u, 0x53E8u, 0x522Au, 0x506Cu, 0x51AEu, 0x5AF0u, 0x5B32u, 0x5974u, 0x58B6u, 0x5DF8u, 0x5C3Au, 0x5E7Cu, 0x5FBEu,
+    0xE100u, 0xE0C2u, 0xE284u, 0xE346u, 0xE608u, 0xE7CAu, 0xE58Cu, 0xE44Eu, 0xEF10u, 0xEED2u, 0xEC94u, 0xED56u, 0xE818u, 0xE9DAu, 0xEB9Cu, 0xEA5Eu,
+    0xFD20u, 0xFCE2u, 0xFEA4u, 0xFF66u, 0xFA28u, 0xFBEAu, 0xF9ACu, 0xF86Eu, 0xF330u, 0xF2F2u, 0xF0B4u, 0xF176u, 0xF438u, 0xF5FAu, 0xF7BCu, 0xF67Eu,
+    0xD940u, 0xD882u, 0xDAC4u, 0xDB06u, 0xDE48u, 0xDF8Au, 0xDDCCu, 0xDC0Eu, 0xD750u, 0xD692u, 0xD4D4u, 0xD516u, 0xD058u, 0xD19Au, 0xD3DCu, 0xD21Eu,
+    0xC560u, 0xC4A2u, 0xC6E4u, 0xC726u, 0xC268u, 0xC3AAu, 0xC1ECu, 0xC02Eu, 0xCB70u, 0xCAB2u, 0xC8F4u, 0xC936u, 0xCC78u, 0xCDBAu, 0xCFFCu, 0xCE3Eu,
+    0x9180u, 0x9042u, 0x9204u, 0x93C6u, 0x9688u, 0x974Au, 0x950Cu, 0x94CEu, 0x9F90u, 0x9E52u, 0x9C14u, 0x9DD6u, 0x9898u, 0x995Au, 0x9B1Cu, 0x9ADEu,
+    0x8DA0u, 0x8C62u, 0x8E24u, 0x8FE6u, 0x8AA8u, 0x8B6Au, 0x892Cu, 0x88EEu, 0x83B0u, 0x8272u, 0x8034u, 0x81F6u, 0x84B8u, 0x857Au, 0x873Cu, 0x86FEu,
+    0xA9C0u, 0xA802u, 0xAA44u, 0xAB86u, 0xAEC8u, 0xAF0Au, 0xAD4Cu, 0xAC8Eu, 0xA7D0u, 0xA612u, 0xA454u, 0xA596u, 0xA0D8u, 0xA11Au, 0xA35Cu, 0xA29Eu,
+    0xB5E0u, 0xB422u, 0xB664u, 0xB7A6u, 0xB2E8u, 0xB32Au, 0xB16Cu, 0xB0AEu, 0xBBF0u, 0xBA32u, 0xB874u, 0xB9B6u, 0xBCF8u, 0xBD3Au, 0xBF7Cu, 0xBEBEu,
+};
+
+/*****************************************************************************
  * Local function prototypes
  ****************************************************************************/
 
 void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE]);
 void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src);
 void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src);
+void block_xor(uint8_t p_dst[AES_BLOCK_SIZE], const uint8_t p_src[AES_BLOCK_SIZE]);
 void uint128_struct_mul2(uint128_struct_t * p);
+void block_mul256(uint8_t p_block[AES_BLOCK_SIZE]);
 
 /*****************************************************************************
  * Functions
@@ -80,6 +108,58 @@ start:
     }
 
     uint128_struct_to_bytes(p_block, &result);
+}
+
+void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BLOCK_SIZE])
+{
+    uint8_t             i_bit = 1u;
+    uint_fast8_t        j;
+    uint8_t             block[AES_BLOCK_SIZE];
+
+    memset(p_table, 0, sizeof(*p_table));
+
+    for (i_bit = 0x80u; i_bit != 0; i_bit >>= 1u)
+    {
+        memset(&block[1], 0u, sizeof(block) - 1u);
+        block[0] = i_bit;
+        gcm_mul(block, p_key);
+        for (j = 255; j != 0; j--)
+        {
+            if (j & i_bit)
+            {
+                block_xor(p_table->key_data[j - 1u], block);
+            }
+        }
+    }
+}
+
+void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_table)
+{
+    uint128_struct_t    a;
+    uint8_t             block_byte;
+    uint8_t             result[AES_BLOCK_SIZE] = { 0 };
+    uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
+
+    /* Skip initial block_mul256(result) which is unnecessary when
+     * result is initially zero. */
+    goto start;
+
+    for (;;)
+    {
+        block_mul256(result);
+start:
+        block_byte = p_block[i];
+        if (block_byte)
+        {
+            block_xor(result, p_table->key_data[block_byte - 1u]);
+        }
+        if (i == 0)
+        {
+            break;
+        }
+        i--;
+    }
+    memcpy(p_block, result, AES_BLOCK_SIZE);
 }
 
 /*****************************************************************************
@@ -134,6 +214,16 @@ void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src
     }
 }
 
+void block_xor(uint8_t p_dst[AES_BLOCK_SIZE], const uint8_t p_src[AES_BLOCK_SIZE])
+{
+    uint_fast8_t        i;
+
+    for (i = 0; i < AES_BLOCK_SIZE; i++)
+    {
+        p_dst[i] ^= p_src[i];
+    }
+}
+
 void uint128_struct_mul2(uint128_struct_t * p)
 {
     uint_fast8_t        i;
@@ -156,4 +246,18 @@ void uint128_struct_mul2(uint128_struct_t * p)
         p->element[i] = (p->element[i] >> 1u) ^ carry;
         carry = next_carry;
     }
+}
+
+void block_mul256(uint8_t p_block[AES_BLOCK_SIZE])
+{
+    uint_fast8_t        i;
+    uint16_t            reduce;
+
+    reduce = mul256_reduce_table[p_block[AES_BLOCK_SIZE - 1u]];
+    for (i = AES_BLOCK_SIZE - 1u; i != 0; i--)
+    {
+        p_block[i] = p_block[i - 1u];
+    }
+    p_block[0] = reduce >> 8u;
+    p_block[1] ^= reduce;
 }
