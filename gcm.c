@@ -54,7 +54,7 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
     uint128_struct_t    zeros = { 0 };
 #endif
     uint_fast8_t        i;
-    uint128_element_t   j_bit;
+    uint8_t             j_bit;
 
     uint128_struct_from_bytes(&a, p_key);
 
