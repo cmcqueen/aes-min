@@ -32,6 +32,12 @@
  * replaced by memcpy(). */
 typedef unsigned int uint128_element_t;
 
+/*
+ * This struct is basically to enable big-integer calculations in the 128-bit
+ * Galois field. The struct is fixed size for this purpose. The functions that
+ * operate on it are specialised to do the bit-reversed operations needed
+ * specifically for the Galois 128-bit multiply used in the GCM algorithm.
+ */
 typedef struct
 {
     uint128_element_t   element[UINT128_NUM_ELEMENTS];
@@ -41,6 +47,11 @@ typedef struct
  * Look-up tables
  ****************************************************************************/
 
+/*
+ * Fixed look-up table to efficiently implement block_mul256().
+ * This data is independent of the GCM hash key, so it's a const table, and can
+ * be located in Flash or other non-volatile memory on an embedded system.
+ */
 const uint16_t mul256_reduce_table[256] =
 {
     0x0000u, 0x01C2u, 0x0384u, 0x0246u, 0x0708u, 0x06CAu, 0x048Cu, 0x054Eu, 0x0E10u, 0x0FD2u, 0x0D94u, 0x0C56u, 0x0918u, 0x08DAu, 0x0A9Cu, 0x0B5Eu,
@@ -76,6 +87,12 @@ void block_mul256(uint8_t p_block[AES_BLOCK_SIZE]);
  * Functions
  ****************************************************************************/
 
+/*
+ * Galois 128-bit multiply for GCM mode of encryption.
+ *
+ * This implementation uses a bit-by-bit calculation of the multiplication.
+ * It is the slowest implementation, but requires minimal memory.
+ */
 void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE])
 {
     uint128_struct_t    a;
@@ -110,6 +127,10 @@ start:
     uint128_struct_to_bytes(p_block, &result);
 }
 
+/*
+ * Given a key, pre-calculate the large table that is needed for
+ * gcm_mul_table(), the 8-bit table-driven implementation of GCM multiplication.
+ */
 void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BLOCK_SIZE])
 {
     uint8_t             i_bit = 1u;
@@ -133,6 +154,13 @@ void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BL
     }
 }
 
+/*
+ * Galois 128-bit multiply for GCM mode of encryption.
+ *
+ * This implementation uses an 8-bit table look-up.
+ * It is the fastest implementation, but requires a large table pre-calculated
+ * from the key.
+ */
 void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_table)
 {
     uint128_struct_t    a;
@@ -162,6 +190,10 @@ start:
     memcpy(p_block, result, AES_BLOCK_SIZE);
 }
 
+/*
+ * Given a key, pre-calculate the medium-sized table that is needed for
+ * gcm_mul_table4(), the 4-bit table-driven implementation of GCM multiplication.
+ */
 void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_BLOCK_SIZE])
 {
     uint8_t             i_bit = 1u;
@@ -198,6 +230,14 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_
     }
 }
 
+/*
+ * Galois 128-bit multiply for GCM mode of encryption.
+ *
+ * This implementation uses an 4-bit table look-up.
+ * This implementation is faster than the bit-by-bit implementation, but has
+ * more modest memory requirements for the table pre-calculated from the key,
+ * compared to the 8-bit table look-up of gcm_mul_table().
+ */
 void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_table)
 {
     uint128_struct_t    a;
@@ -240,6 +280,10 @@ start:
  * Local functions
  ****************************************************************************/
 
+/*
+ * Convert a multiplicand for GCM Galois 128-bit multiply into a form that can
+ * be more efficiently manipulated for bit-by-bit calculation of the multiply.
+ */
 void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE])
 {
     uint_fast8_t        i;
@@ -259,6 +303,10 @@ void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES
     }
 }
 
+/*
+ * Convert the GCM Galois 128-bit multiply special form back into an ordinary
+ * string of bytes.
+ */
 void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src)
 {
     uint_fast8_t        i;
@@ -278,6 +326,11 @@ void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct
     }
 }
 
+/*
+ * XOR for uint128_struct_t.
+ *
+ * In-place XOR all the bits of p_src into p_dst.
+ */
 void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src)
 {
     uint_fast8_t        i;
@@ -288,6 +341,11 @@ void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src
     }
 }
 
+/*
+ * XOR for byte array of standard AES block size.
+ *
+ * In-place XOR all the bits of p_src into p_dst.
+ */
 void block_xor(uint8_t p_dst[AES_BLOCK_SIZE], const uint8_t p_src[AES_BLOCK_SIZE])
 {
     uint_fast8_t        i;
@@ -298,6 +356,11 @@ void block_xor(uint8_t p_dst[AES_BLOCK_SIZE], const uint8_t p_src[AES_BLOCK_SIZE
     }
 }
 
+/*
+ * Galois 128-bit multiply by 2.
+ *
+ * Multiply is done in-place on the uint128_struct_t operand.
+ */
 void uint128_struct_mul2(uint128_struct_t * p)
 {
     uint_fast8_t        i;
@@ -322,6 +385,11 @@ void uint128_struct_mul2(uint128_struct_t * p)
     }
 }
 
+/*
+ * Galois 128-bit multiply by 2^8.
+ *
+ * Multiply is done in-place on the byte array of standard AES block size.
+ */
 void block_mul256(uint8_t p_block[AES_BLOCK_SIZE])
 {
     uint_fast8_t        i;
