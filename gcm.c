@@ -24,8 +24,10 @@
  ****************************************************************************/
 
 /* Set an element type that is efficient on the target platform.
- * unsigned int is a reasonable default.
- * Ensure UINT128_ELEMENT_SIZE is suitably set to match. */
+ * Ensure UINT128_ELEMENT_SIZE is suitably set to match.
+ * unsigned int is a reasonable default, but it could be uint16_t, uint8_t.
+ * If uint8_t is used, uint128_struct_from_bytes() etc could simply be
+ * replaced by memcpy(). */
 typedef unsigned int uint128_element_t;
 
 typedef struct
