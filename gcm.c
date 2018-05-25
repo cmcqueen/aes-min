@@ -162,6 +162,80 @@ start:
     memcpy(p_block, result, AES_BLOCK_SIZE);
 }
 
+void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_BLOCK_SIZE])
+{
+    uint8_t             i_bit = 1u;
+    uint_fast8_t        j;
+    uint8_t             block[AES_BLOCK_SIZE];
+
+    memset(p_table, 0, sizeof(*p_table));
+
+    for (i_bit = 0x80u; i_bit != 0; i_bit >>= 1u)
+    {
+        memset(&block[1], 0u, sizeof(block) - 1u);
+        block[0] = i_bit;
+        gcm_mul(block, p_key);
+        if (i_bit >= 0x10u)
+        {
+            for (j = 15; j != 0; j--)
+            {
+                if ((j << 4u) & i_bit)
+                {
+                    block_xor(p_table->key_data_hi[j - 1u], block);
+                }
+            }
+        }
+        else
+        {
+            for (j = 15; j != 0; j--)
+            {
+                if (j & i_bit)
+                {
+                    block_xor(p_table->key_data_lo[j - 1u], block);
+                }
+            }
+        }
+    }
+}
+
+void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_table)
+{
+    uint128_struct_t    a;
+    uint8_t             block_byte;
+    uint8_t             block_nibble;
+    uint8_t             result[AES_BLOCK_SIZE] = { 0 };
+    uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
+
+    /* Skip initial block_mul256(result) which is unnecessary when
+     * result is initially zero. */
+    goto start;
+
+    for (;;)
+    {
+        block_mul256(result);
+start:
+        block_byte = p_block[i];
+        /* High nibble */
+        block_nibble = (block_byte >> 4u) & 0xFu;
+        if (block_nibble)
+        {
+            block_xor(result, p_table->key_data_hi[block_nibble - 1u]);
+        }
+        /* Low nibble */
+        block_nibble = block_byte & 0xFu;
+        if (block_nibble)
+        {
+            block_xor(result, p_table->key_data_lo[block_nibble - 1u]);
+        }
+        if (i == 0)
+        {
+            break;
+        }
+        i--;
+    }
+    memcpy(p_block, result, AES_BLOCK_SIZE);
+}
+
 /*****************************************************************************
  * Local functions
  ****************************************************************************/

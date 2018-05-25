@@ -13,13 +13,13 @@ typedef struct
     uint8_t a[AES_BLOCK_SIZE];
     uint8_t b[AES_BLOCK_SIZE];
     uint8_t result[AES_BLOCK_SIZE];
-} test_vector_t;
+} mul_test_vector_t;
 
 /*****************************************************************************
  * Look-up tables
  ****************************************************************************/
 
-static const test_vector_t test_vectors[] =
+static const mul_test_vector_t mul_test_vectors[] =
 {
     {
         { 0x95u, 0x2Bu, 0x2Au, 0x56u, 0xA5u, 0x60u, 0x4Au, 0xC0u, 0xB3u, 0x2Bu, 0x66u, 0x56u, 0xA0u, 0x5Bu, 0x40u, 0xB6u, },
@@ -86,14 +86,14 @@ static int gcm_mul_test(void)
     int     result;
     uint8_t gmul_out[AES_BLOCK_SIZE];
 
-    for (i = 0; i < (sizeof(test_vectors)/sizeof(test_vectors[0])); i++)
+    for (i = 0; i < (sizeof(mul_test_vectors)/sizeof(mul_test_vectors[0])); i++)
     {
-        result = gcm_mul_test_one(test_vectors[i].a, test_vectors[i].b, test_vectors[i].result);
+        result = gcm_mul_test_one(mul_test_vectors[i].a, mul_test_vectors[i].b, mul_test_vectors[i].result);
         if (result)
             return result;
 
         /* Swapped. */
-        result = gcm_mul_test_one(test_vectors[i].b, test_vectors[i].a, test_vectors[i].result);
+        result = gcm_mul_test_one(mul_test_vectors[i].b, mul_test_vectors[i].a, mul_test_vectors[i].result);
         if (result)
             return result;
     }
@@ -148,14 +148,81 @@ static int gcm_mul_table_test(void)
     size_t  i;
     int     result;
 
-    for (i = 0; i < (sizeof(test_vectors)/sizeof(test_vectors[0])); i++)
+    for (i = 0; i < (sizeof(mul_test_vectors)/sizeof(mul_test_vectors[0])); i++)
     {
-        result = gcm_mul_table_test_one(test_vectors[i].a, test_vectors[i].b, test_vectors[i].result);
+        result = gcm_mul_table_test_one(mul_test_vectors[i].a, mul_test_vectors[i].b, mul_test_vectors[i].result);
         if (result)
             return result;
 
         /* Swapped. */
-        result = gcm_mul_table_test_one(test_vectors[i].b, test_vectors[i].a, test_vectors[i].result);
+        result = gcm_mul_table_test_one(mul_test_vectors[i].b, mul_test_vectors[i].a, mul_test_vectors[i].result);
+        if (result)
+            return result;
+    }
+    return 0;
+}
+
+static int gcm_mul_table4_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t b[AES_BLOCK_SIZE], const uint8_t correct_result[AES_BLOCK_SIZE])
+{
+    gcm_mul_table4_t mul_table;
+    size_t  j;
+    int     result;
+    uint8_t gmul_out[AES_BLOCK_SIZE];
+
+    /* Prepare the table. */
+    //printf("gcm_mul_prepare_table4()\n");
+    gcm_mul_prepare_table4(&mul_table, b);
+
+    /* Do the multiply. */
+    memcpy(gmul_out, a, AES_BLOCK_SIZE);
+    //printf("gcm_mul_table4()\n");
+    gcm_mul_table4(gmul_out, &mul_table);
+
+    result = memcmp(gmul_out, correct_result, AES_BLOCK_SIZE) ? 1 : 0;
+    if (result)
+    {
+        printf("gcm_mul_prepare_table4() result:\n");
+        for (j = 0; j < 15; j++)
+        {
+            printf("Hi %02zX: ", j + 1);
+            print_block_hex(mul_table.key_data_hi[j], 16u);
+        }
+        for (j = 0; j < 15; j++)
+        {
+            printf("Lo %02zX: ", j + 1);
+            print_block_hex(mul_table.key_data_lo[j], 16u);
+        }
+
+        printf("gcm_mul_table4() a:\n");
+        print_block_hex(a, 16u);
+
+        printf("gcm_mul_table4() b:\n");
+        print_block_hex(b, 16u);
+
+        printf("gcm_mul_table4() expected:\n");
+        print_block_hex(correct_result, 16u);
+
+        printf("gcm_mul_table4() result:\n");
+        print_block_hex(gmul_out, 16u);
+
+        return result;
+    }
+    return 0;
+}
+
+static int gcm_mul_table4_test(void)
+{
+    size_t  i;
+    int     result;
+
+    for (i = 0; i < (sizeof(mul_test_vectors)/sizeof(mul_test_vectors[0])); i++)
+    {
+        result = gcm_mul_table4_test_one(mul_test_vectors[i].a, mul_test_vectors[i].b, mul_test_vectors[i].result);
+        if (result)
+            return result;
+
+        /* Swapped. */
+        result = gcm_mul_table4_test_one(mul_test_vectors[i].b, mul_test_vectors[i].a, mul_test_vectors[i].result);
         if (result)
             return result;
     }
@@ -178,6 +245,10 @@ int main(int argc, char **argv)
         return result;
 
     result = gcm_mul_table_test();
+    if (result)
+        return result;
+
+    result = gcm_mul_table4_test();
     if (result)
         return result;
 
