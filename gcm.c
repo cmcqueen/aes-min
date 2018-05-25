@@ -50,38 +50,31 @@ void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE
 {
     uint128_struct_t    a;
     uint128_struct_t    result = { 0 };
-    uint_fast8_t        i;
-    uint8_t             j_bit;
+    uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
+    uint8_t             j_bit = 1u;
 
     uint128_struct_from_bytes(&a, p_key);
 
-    for (i = AES_BLOCK_SIZE - 1u; i != 0; i--)
+    /* Skip initial uint128_struct_mul2(&result) which is unnecessary when
+     * result is initially zero. */
+    goto start;
+
+    for (;;)
     {
         for (j_bit = 1u; j_bit != 0; j_bit <<= 1u)
         {
+            uint128_struct_mul2(&result);
+start:
             if (p_block[i] & j_bit)
             {
                 uint128_struct_xor(&result, &a);
             }
-            uint128_struct_mul2(&result);
         }
-    }
-
-    /* For i = 0, modify the point of the loop exit, to avoid final
-     * unnecessary uint128_struct_mul2(&result). */
-    j_bit = 1u;
-    for (;;)
-    {
-        if (p_block[i] & j_bit)
-        {
-            uint128_struct_xor(&result, &a);
-        }
-        j_bit <<= 1;
-        if (j_bit == 0)
+        if (i == 0)
         {
             break;
         }
-        uint128_struct_mul2(&result);
+        i--;
     }
 
     uint128_struct_to_bytes(p_block, &result);
