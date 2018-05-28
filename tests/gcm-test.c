@@ -22,6 +22,13 @@
  * Types
  ****************************************************************************/
 
+typedef enum
+{
+    GCM_MUL_BIT_BY_BIT,
+    GCM_MUL_TABLE4,
+    GCM_MUL_TABLE8,
+} gcm_mul_implementation_t;
+
 typedef struct
 {
     uint8_t a[AES_BLOCK_SIZE];
@@ -269,43 +276,44 @@ static int gcm_mul_table4_test(void)
     return 0;
 }
 
-static int gcm_test(void)
+static int gcm_test(gcm_mul_implementation_t mul_impl)
 {
-    size_t          i;
-    size_t          data_len;
-    int             result;
-    gcm_iv_t        iv_block;
-    ghash_lengths_t ghash_lengths;
-    const uint8_t * p_data;
-    uint8_t         data_block[AES_BLOCK_SIZE];
-    uint8_t         aes_key[AES_BLOCK_SIZE];
-    uint8_t         aes_work[AES_BLOCK_SIZE];
-    uint8_t         ghash_key[AES_BLOCK_SIZE];
-    uint8_t         ghash_work[AES_BLOCK_SIZE];
+    size_t              i;
+    size_t              data_len;
+    int                 result;
+    gcm_iv_t            iv_block;
+    ghash_lengths_t     ghash_lengths;
+    const uint8_t *     p_data;
+    uint8_t             data_block[AES_BLOCK_SIZE];
+    uint8_t             aes_key[AES_BLOCK_SIZE];
+    uint8_t             aes_work[AES_BLOCK_SIZE];
+    uint8_t             ghash_key[AES_BLOCK_SIZE];
+    uint8_t             ghash_work[AES_BLOCK_SIZE];
+    gcm_mul_table_t     mul_table8;
+    gcm_mul_table4_t    mul_table4;
 
     for (i = 0; i < GCM_NUM_VECTORS; i++)
     {
-        printf("Test %zu\n", i);
-
-        /* Prepare working IV */
+        /* Prepare working IV. */
         memcpy(iv_block.iv, gcm_test_vectors[i].p_iv, sizeof(iv_block.iv));
         iv_block.ctr = htobe32(1);
-#if 0
-        printf("IV: ");
-        print_block_hex(iv_block.bytes, sizeof(iv_block.bytes));
-#endif
 
-        /* Prepare GHASH */
+        /* Prepare GHASH calculation. */
         memset(ghash_work, 0, sizeof(ghash_work));
         memset(ghash_key, 0, sizeof(ghash_key));
         memcpy(aes_key, gcm_test_vectors[i].p_key, sizeof(aes_key));
         aes128_otfks_encrypt(ghash_key, aes_key);
-#if 0
-        printf("GHASH Key: ");
-        print_block_hex(ghash_key, sizeof(ghash_key));
-#endif
+        switch (mul_impl)
+        {
+            case GCM_MUL_TABLE4:
+                gcm_mul_prepare_table4(&mul_table4, ghash_key);
+                break;
+            case GCM_MUL_TABLE8:
+                gcm_mul_prepare_table(&mul_table8, ghash_key);
+                break;
+        }
 
-        /* */
+        /* Compute GHASH for any AAD (additional authenticated data). */
         if (gcm_test_vectors[i].p_aad)
         {
             p_data = gcm_test_vectors[i].p_aad;
@@ -317,12 +325,25 @@ static int gcm_test(void)
                     memset(data_block + data_len, 0, sizeof(data_block) - data_len);
 
                 aes_block_xor(ghash_work, data_block);
-                gcm_mul(ghash_work, ghash_key);
+                switch (mul_impl)
+                {
+                    case GCM_MUL_BIT_BY_BIT:
+                        gcm_mul(ghash_work, ghash_key);
+                        break;
+                    case GCM_MUL_TABLE4:
+                        gcm_mul_table4(ghash_work, &mul_table4);
+                        break;
+                    case GCM_MUL_TABLE8:
+                        gcm_mul_table(ghash_work, &mul_table8);
+                        break;
+                }
 
                 p_data   += MIN(data_len, sizeof(data_block));
                 data_len -= MIN(data_len, sizeof(data_block));
             }
         }
+
+        /* Compute GHASH for any plaintext. */
         if (gcm_test_vectors[i].p_pt)
         {
             p_data = gcm_test_vectors[i].p_pt;
@@ -338,45 +359,50 @@ static int gcm_test(void)
                 aes_block_xor(data_block, aes_work);
                 if (data_len < sizeof(data_block))
                     memset(data_block + data_len, 0, sizeof(data_block) - data_len);
+                /* TODO: Verify ciphertext against that in the test vector. */
 
                 aes_block_xor(ghash_work, data_block);
-                gcm_mul(ghash_work, ghash_key);
+                switch (mul_impl)
+                {
+                    case GCM_MUL_BIT_BY_BIT:
+                        gcm_mul(ghash_work, ghash_key);
+                        break;
+                    case GCM_MUL_TABLE4:
+                        gcm_mul_table4(ghash_work, &mul_table4);
+                        break;
+                    case GCM_MUL_TABLE8:
+                        gcm_mul_table(ghash_work, &mul_table8);
+                        break;
+                }
 
                 p_data   += MIN(data_len, sizeof(data_block));
                 data_len -= MIN(data_len, sizeof(data_block));
             }
         }
 
-        /* Final GHASH calculation */
+        /* Final GHASH calculation.
+         * Add block that indicates lengths of AAD and plaintext. */
         ghash_lengths.padding1 = 0;
         ghash_lengths.aad_len = htobe32(gcm_test_vectors[i].aad_len * 8u);
         ghash_lengths.padding2 = 0;
         ghash_lengths.pt_len = htobe32(gcm_test_vectors[i].pt_len * 8u);
         aes_block_xor(ghash_work, ghash_lengths.bytes);
         gcm_mul(ghash_work, ghash_key);
-#if 0
-        printf("GHASH Work: ");
-        print_block_hex(ghash_work, sizeof(ghash_work));
-#endif
 
+        /* Final AES operation that is XORed with final GHASH value. */
         iv_block.ctr = htobe32(1);
         memcpy(aes_work, iv_block.bytes, sizeof(aes_work));
         memcpy(aes_key, gcm_test_vectors[i].p_key, sizeof(aes_key));
-#if 0
-        printf("AES key (before): ");
-        print_block_hex(aes_key, sizeof(aes_key));
-        printf("AES work (before): ");
-        print_block_hex(aes_work, sizeof(aes_work));
-#endif
         aes128_otfks_encrypt(aes_work, aes_key);
-#if 0
-        printf("AES work (after): ");
-        print_block_hex(aes_work, sizeof(aes_work));
-#endif
         aes_block_xor(ghash_work, aes_work);
+        /* ghash_work now contains calculated tag. */
+
+        /* Verify tag. */
         result = memcmp(ghash_work, gcm_test_vectors[i].p_tag, gcm_test_vectors[i].tag_len) ? 1 : 0;
         if (result)
         {
+            printf("Test vector %zu failed\n", i);
+
             printf("Tag result:\n");
             print_block_hex(ghash_work, gcm_test_vectors[i].tag_len);
 
@@ -411,7 +437,13 @@ int main(int argc, char **argv)
     if (result)
         return result;
 
-    result = gcm_test();
+    result = gcm_test(GCM_MUL_BIT_BY_BIT);
+    if (result)
+        return result;
+    result = gcm_test(GCM_MUL_TABLE4);
+    if (result)
+        return result;
+    result = gcm_test(GCM_MUL_TABLE8);
     if (result)
         return result;
 
