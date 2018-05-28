@@ -20,7 +20,7 @@ lib@PACKAGE_NAME@_la_SOURCES += aes-sbox-small.c aes-sbox-inv-small.c aes-mul.c 
 else
 lib@PACKAGE_NAME@_la_SOURCES += aes-sbox.c aes-sbox-inv.c
 endif
-lib@PACKAGE_NAME@_la_SOURCES += aes-sbox.h aes-shift-rows.h aes-mix-columns.h aes-mul.h aes-mul2.h aes-inv.h aes-rotate.h aes-add-round-key.h aes-key-schedule-round.h
+lib@PACKAGE_NAME@_la_SOURCES += aes-sbox.h aes-shift-rows.h aes-mix-columns.h aes-mul.h aes-mul2.h aes-inv.h aes-rotate.h aes-block-xor.h aes-key-schedule-round.h
 lib@PACKAGE_NAME@_la_SOURCES += gcm.c gcm.h
 lib@PACKAGE_NAME@_la_LDFLAGS = -version-info @LIB_SO_VERSION@
 

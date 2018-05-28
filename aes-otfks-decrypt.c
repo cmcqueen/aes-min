@@ -9,7 +9,7 @@
  ****************************************************************************/
 
 #include "aes.h"
-#include "aes-add-round-key.h"
+#include "aes-block-xor.h"
 #include "aes-key-schedule-round.h"
 #include "aes-sbox.h"
 #include "aes-shift-rows.h"
@@ -94,13 +94,13 @@ void aes128_otfks_decrypt(uint8_t p_block[AES_BLOCK_SIZE], uint8_t p_key[AES128_
     uint_fast8_t    round;
     uint8_t         rcon = AES128_KEY_SCHEDULE_LAST_RCON;
 
-    aes_add_round_key(p_block, p_key);
+    aes_block_xor(p_block, p_key);
     aes_shift_rows_inv(p_block);
     aes_sbox_inv_apply_block(p_block);
     for (round = AES128_NUM_ROUNDS - 1u; round >= 1; --round)
     {
         aes128_key_schedule_inv_round(p_key, rcon);
-        aes_add_round_key(p_block, p_key);
+        aes_block_xor(p_block, p_key);
         aes_mix_columns_inv(p_block);
         aes_shift_rows_inv(p_block);
         aes_sbox_inv_apply_block(p_block);
@@ -109,5 +109,5 @@ void aes128_otfks_decrypt(uint8_t p_block[AES_BLOCK_SIZE], uint8_t p_key[AES128_
         rcon = aes_div2(rcon);
     }
     aes128_key_schedule_inv_round(p_key, rcon);
-    aes_add_round_key(p_block, p_key);
+    aes_block_xor(p_block, p_key);
 }

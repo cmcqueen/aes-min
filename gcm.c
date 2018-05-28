@@ -10,6 +10,8 @@
 
 #include "gcm.h"
 
+#include "aes-block-xor.h"
+
 #include <string.h>
 
 /*****************************************************************************
@@ -79,7 +81,6 @@ const uint16_t mul256_reduce_table[256] =
 void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE]);
 void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src);
 void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src);
-void block_xor(uint8_t p_dst[AES_BLOCK_SIZE], const uint8_t p_src[AES_BLOCK_SIZE]);
 void uint128_struct_mul2(uint128_struct_t * p);
 void block_mul256(uint8_t p_block[AES_BLOCK_SIZE]);
 
@@ -148,7 +149,7 @@ void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BL
         {
             if (j & i_bit)
             {
-                block_xor(p_table->key_data[j - 1u], block);
+                aes_block_xor(p_table->key_data[j - 1u], block);
             }
         }
     }
@@ -179,7 +180,7 @@ start:
         block_byte = p_block[i];
         if (block_byte)
         {
-            block_xor(result, p_table->key_data[block_byte - 1u]);
+            aes_block_xor(result, p_table->key_data[block_byte - 1u]);
         }
         if (i == 0)
         {
@@ -213,7 +214,7 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_
             {
                 if ((j << 4u) & i_bit)
                 {
-                    block_xor(p_table->key_data_hi[j - 1u], block);
+                    aes_block_xor(p_table->key_data_hi[j - 1u], block);
                 }
             }
         }
@@ -223,7 +224,7 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_
             {
                 if (j & i_bit)
                 {
-                    block_xor(p_table->key_data_lo[j - 1u], block);
+                    aes_block_xor(p_table->key_data_lo[j - 1u], block);
                 }
             }
         }
@@ -259,13 +260,13 @@ start:
         block_nibble = (block_byte >> 4u) & 0xFu;
         if (block_nibble)
         {
-            block_xor(result, p_table->key_data_hi[block_nibble - 1u]);
+            aes_block_xor(result, p_table->key_data_hi[block_nibble - 1u]);
         }
         /* Low nibble */
         block_nibble = block_byte & 0xFu;
         if (block_nibble)
         {
-            block_xor(result, p_table->key_data_lo[block_nibble - 1u]);
+            aes_block_xor(result, p_table->key_data_lo[block_nibble - 1u]);
         }
         if (i == 0)
         {
@@ -338,21 +339,6 @@ void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src
     for (i = 0; i < UINT128_NUM_ELEMENTS; i++)
     {
         p_dst->element[i] ^= p_src->element[i];
-    }
-}
-
-/*
- * XOR for byte array of standard AES block size.
- *
- * In-place XOR all the bits of p_src into p_dst.
- */
-void block_xor(uint8_t p_dst[AES_BLOCK_SIZE], const uint8_t p_src[AES_BLOCK_SIZE])
-{
-    uint_fast8_t        i;
-
-    for (i = 0; i < AES_BLOCK_SIZE; i++)
-    {
-        p_dst[i] ^= p_src[i];
     }
 }
 
