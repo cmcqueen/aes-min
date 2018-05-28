@@ -1,8 +1,22 @@
 
 #include "gcm.h"
+#include "aes-block-xor.h"
 #include "aes-print-block.h"
 
+#include "gcm-test-vectors.h"
+
 #include <string.h>
+
+#include <endian.h>
+
+/*****************************************************************************
+ * Defines
+ ****************************************************************************/
+
+#define SIMPLE_IV_SIZE          12u
+
+#define MAX(A, B)               ((A) >= (B) ? (A) : (B))
+#define MIN(A, B)               ((A) <= (B) ? (A) : (B))
 
 /*****************************************************************************
  * Types
@@ -14,6 +28,32 @@ typedef struct
     uint8_t b[AES_BLOCK_SIZE];
     uint8_t result[AES_BLOCK_SIZE];
 } mul_test_vector_t;
+
+typedef union
+{
+    uint8_t bytes[AES_BLOCK_SIZE];
+    struct
+    {
+        uint8_t iv[SIMPLE_IV_SIZE];
+        union
+        {
+            uint8_t ctr_bytes[4];
+            uint32_t ctr;
+        };
+    };
+} gcm_iv_t;
+
+typedef union
+{
+    uint8_t bytes[AES_BLOCK_SIZE];
+    struct
+    {
+        uint32_t padding1;
+        uint32_t aad_len;
+        uint32_t padding2;
+        uint32_t pt_len;
+    };
+} ghash_lengths_t;
 
 /*****************************************************************************
  * Look-up tables
@@ -229,6 +269,125 @@ static int gcm_mul_table4_test(void)
     return 0;
 }
 
+static int gcm_test(void)
+{
+    size_t          i;
+    size_t          data_len;
+    int             result;
+    gcm_iv_t        iv_block;
+    ghash_lengths_t ghash_lengths;
+    const uint8_t * p_data;
+    uint8_t         data_block[AES_BLOCK_SIZE];
+    uint8_t         aes_key[AES_BLOCK_SIZE];
+    uint8_t         aes_work[AES_BLOCK_SIZE];
+    uint8_t         ghash_key[AES_BLOCK_SIZE];
+    uint8_t         ghash_work[AES_BLOCK_SIZE];
+
+    for (i = 0; i < GCM_NUM_VECTORS; i++)
+    {
+        printf("Test %zu\n", i);
+
+        /* Prepare working IV */
+        memcpy(iv_block.iv, gcm_test_vectors[i].p_iv, sizeof(iv_block.iv));
+        iv_block.ctr = htobe32(1);
+#if 0
+        printf("IV: ");
+        print_block_hex(iv_block.bytes, sizeof(iv_block.bytes));
+#endif
+
+        /* Prepare GHASH */
+        memset(ghash_work, 0, sizeof(ghash_work));
+        memset(ghash_key, 0, sizeof(ghash_key));
+        memcpy(aes_key, gcm_test_vectors[i].p_key, sizeof(aes_key));
+        aes128_otfks_encrypt(ghash_key, aes_key);
+#if 0
+        printf("GHASH Key: ");
+        print_block_hex(ghash_key, sizeof(ghash_key));
+#endif
+
+        /* */
+        if (gcm_test_vectors[i].p_aad)
+        {
+            p_data = gcm_test_vectors[i].p_aad;
+            data_len = gcm_test_vectors[i].aad_len;
+            while (data_len)
+            {
+                memcpy(data_block, p_data, MIN(data_len, sizeof(data_block)));
+                if (data_len < sizeof(data_block))
+                    memset(data_block + data_len, 0, sizeof(data_block) - data_len);
+
+                aes_block_xor(ghash_work, data_block);
+                gcm_mul(ghash_work, ghash_key);
+
+                p_data   += MIN(data_len, sizeof(data_block));
+                data_len -= MIN(data_len, sizeof(data_block));
+            }
+        }
+        if (gcm_test_vectors[i].p_pt)
+        {
+            p_data = gcm_test_vectors[i].p_pt;
+            data_len = gcm_test_vectors[i].pt_len;
+            while (data_len)
+            {
+                memcpy(data_block, p_data, MIN(data_len, sizeof(data_block)));
+                if (data_len < sizeof(data_block))
+                    memset(data_block + data_len, 0, sizeof(data_block) - data_len);
+
+                iv_block.ctr = htobe32(be32toh(iv_block.ctr) + 1);
+                memcpy(aes_work, iv_block.bytes, sizeof(aes_work));
+                memcpy(aes_key, gcm_test_vectors[i].p_key, sizeof(aes_key));
+                aes128_otfks_encrypt(aes_work, aes_key);
+                aes_block_xor(data_block, aes_work);
+
+                aes_block_xor(ghash_work, data_block);
+                gcm_mul(ghash_work, ghash_key);
+
+                p_data   += MIN(data_len, sizeof(data_block));
+                data_len -= MIN(data_len, sizeof(data_block));
+            }
+        }
+
+        /* Final GHASH calculation */
+        ghash_lengths.padding1 = 0;
+        ghash_lengths.aad_len = htobe32(gcm_test_vectors[i].aad_len * 8u);
+        ghash_lengths.padding2 = 0;
+        ghash_lengths.pt_len = htobe32(gcm_test_vectors[i].pt_len * 8u);
+        aes_block_xor(ghash_work, ghash_lengths.bytes);
+        gcm_mul(ghash_work, ghash_key);
+#if 0
+        printf("GHASH Work: ");
+        print_block_hex(ghash_work, sizeof(ghash_work));
+#endif
+
+        iv_block.ctr = htobe32(1);
+        memcpy(aes_work, iv_block.bytes, sizeof(aes_work));
+        memcpy(aes_key, gcm_test_vectors[i].p_key, sizeof(aes_key));
+#if 0
+        printf("AES key (before): ");
+        print_block_hex(aes_key, sizeof(aes_key));
+        printf("AES work (before): ");
+        print_block_hex(aes_work, sizeof(aes_work));
+#endif
+        aes128_otfks_encrypt(aes_work, aes_key);
+#if 0
+        printf("AES work (after): ");
+        print_block_hex(aes_work, sizeof(aes_work));
+#endif
+        aes_block_xor(ghash_work, aes_work);
+        result = memcmp(ghash_work, gcm_test_vectors[i].p_tag, gcm_test_vectors[i].tag_len) ? 1 : 0;
+        if (result)
+        {
+            printf("Tag result:\n");
+            print_block_hex(ghash_work, gcm_test_vectors[i].tag_len);
+
+            printf("Tag expected:\n");
+            print_block_hex(gcm_test_vectors[i].p_tag, gcm_test_vectors[i].tag_len);
+            return result;
+        }
+    }
+    return 0;
+}
+
 /*****************************************************************************
  * Functions
  ****************************************************************************/
@@ -249,6 +408,10 @@ int main(int argc, char **argv)
         return result;
 
     result = gcm_mul_table4_test();
+    if (result)
+        return result;
+
+    result = gcm_test();
     if (result)
         return result;
 

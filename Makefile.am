@@ -51,5 +51,5 @@ aes_encrypt_test_LDADD = lib@PACKAGE_NAME@.la
 aes_vectors_test_SOURCES = tests/aes-vectors-test.c tests/aes-test-vectors.h aes-print-block.h
 aes_vectors_test_LDADD = lib@PACKAGE_NAME@.la
 
-gcm_test_SOURCES = tests/gcm-test.c gcm.h aes-print-block.h
+gcm_test_SOURCES = tests/gcm-test.c tests/gcm-test-vectors.c tests/gcm-test-vectors.h gcm.h aes-print-block.h
 gcm_test_LDADD = lib@PACKAGE_NAME@.la
