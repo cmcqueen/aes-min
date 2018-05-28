@@ -329,15 +329,15 @@ static int gcm_test(void)
             data_len = gcm_test_vectors[i].pt_len;
             while (data_len)
             {
-                memcpy(data_block, p_data, MIN(data_len, sizeof(data_block)));
-                if (data_len < sizeof(data_block))
-                    memset(data_block + data_len, 0, sizeof(data_block) - data_len);
-
                 iv_block.ctr = htobe32(be32toh(iv_block.ctr) + 1);
                 memcpy(aes_work, iv_block.bytes, sizeof(aes_work));
                 memcpy(aes_key, gcm_test_vectors[i].p_key, sizeof(aes_key));
                 aes128_otfks_encrypt(aes_work, aes_key);
+
+                memcpy(data_block, p_data, MIN(data_len, sizeof(data_block)));
                 aes_block_xor(data_block, aes_work);
+                if (data_len < sizeof(data_block))
+                    memset(data_block + data_len, 0, sizeof(data_block) - data_len);
 
                 aes_block_xor(ghash_work, data_block);
                 gcm_mul(ghash_work, ghash_key);
