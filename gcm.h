@@ -40,6 +40,7 @@ typedef unsigned int uint128_element_t;
 typedef union
 {
     uint128_element_t   element[UINT128_NUM_ELEMENTS];
+    uint16_t            reduce_bytes;
     uint8_t             bytes[AES_BLOCK_SIZE];
 } uint128_struct_t;
 
@@ -60,10 +61,10 @@ typedef struct
 
 void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE]);
 
-void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BLOCK_SIZE]);
+void gcm_mul_prepare_table(gcm_mul_table_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE]);
 void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_table);
 
-void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_BLOCK_SIZE]);
+void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE]);
 void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_table);
 
 #endif /* !defined(GCM_H) */
