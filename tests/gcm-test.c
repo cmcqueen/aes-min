@@ -168,7 +168,7 @@ static int gcm_mul_table_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t
         for (j = 0; j < 255; j++)
         {
             printf("%02zX: ", j + 1);
-            print_block_hex(mul_table.key_data[j], 16u);
+            print_block_hex(mul_table.key_data[j].bytes, 16u);
         }
 
         printf("gcm_mul_table() a:\n");
@@ -230,12 +230,12 @@ static int gcm_mul_table4_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_
         for (j = 0; j < 15; j++)
         {
             printf("Hi %02zX: ", j + 1);
-            print_block_hex(mul_table.key_data_hi[j], 16u);
+            print_block_hex(mul_table.key_data_hi[j].bytes, 16u);
         }
         for (j = 0; j < 15; j++)
         {
             printf("Lo %02zX: ", j + 1);
-            print_block_hex(mul_table.key_data_lo[j], 16u);
+            print_block_hex(mul_table.key_data_lo[j].bytes, 16u);
         }
 
         printf("gcm_mul_table4() a:\n");
