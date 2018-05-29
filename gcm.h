@@ -14,18 +14,44 @@
 #include "aes.h"
 
 /*****************************************************************************
+ * Defines
+ ****************************************************************************/
+
+#define UINT128_ELEMENT_SIZE        sizeof(uint128_element_t)
+#define UINT128_NUM_ELEMENTS        (AES_BLOCK_SIZE / UINT128_ELEMENT_SIZE)
+
+/*****************************************************************************
  * Types
  ****************************************************************************/
 
+/* Set an element type that is efficient on the target platform.
+ * Ensure UINT128_ELEMENT_SIZE is suitably set to match.
+ * unsigned int is a reasonable default, but it could be uint16_t, uint8_t.
+ * If uint8_t is used, uint128_struct_from_bytes() etc could simply be
+ * replaced by memcpy(). */
+typedef unsigned int uint128_element_t;
+
+/*
+ * This struct is basically to enable big-integer calculations in the 128-bit
+ * Galois field. The struct is fixed size for this purpose. The functions that
+ * operate on it are specialised to do the bit-reversed operations needed
+ * specifically for the Galois 128-bit multiply used in the GCM algorithm.
+ */
+typedef union
+{
+    uint128_element_t   element[UINT128_NUM_ELEMENTS];
+    uint8_t             bytes[AES_BLOCK_SIZE];
+} uint128_struct_t;
+
 typedef struct
 {
-    uint8_t             key_data[255][AES_BLOCK_SIZE];
+    uint128_struct_t    key_data[255];
 } gcm_mul_table_t;
 
 typedef struct
 {
-    uint8_t             key_data_hi[15][AES_BLOCK_SIZE];
-    uint8_t             key_data_lo[15][AES_BLOCK_SIZE];
+    uint128_struct_t    key_data_hi[15];
+    uint128_struct_t    key_data_lo[15];
 } gcm_mul_table4_t;
 
 /*****************************************************************************

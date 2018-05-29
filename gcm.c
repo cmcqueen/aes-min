@@ -10,40 +10,19 @@
 
 #include "gcm.h"
 
-#include "aes-block-xor.h"
-
 #include <string.h>
 
 /*****************************************************************************
  * Defines
  ****************************************************************************/
 
-#define UINT128_ELEMENT_SIZE		sizeof(uint128_element_t)
-
 #define UINT128_ELEMENT_SIZE_BITS   (8u * UINT128_ELEMENT_SIZE)
-#define UINT128_NUM_ELEMENTS        (AES_BLOCK_SIZE / UINT128_ELEMENT_SIZE)
+
+#define UINT128_STRUCT_INIT_0       { { 0 } }
 
 /*****************************************************************************
  * Types
  ****************************************************************************/
-
-/* Set an element type that is efficient on the target platform.
- * Ensure UINT128_ELEMENT_SIZE is suitably set to match.
- * unsigned int is a reasonable default, but it could be uint16_t, uint8_t.
- * If uint8_t is used, uint128_struct_from_bytes() etc could simply be
- * replaced by memcpy(). */
-typedef unsigned int uint128_element_t;
-
-/*
- * This struct is basically to enable big-integer calculations in the 128-bit
- * Galois field. The struct is fixed size for this purpose. The functions that
- * operate on it are specialised to do the bit-reversed operations needed
- * specifically for the Galois 128-bit multiply used in the GCM algorithm.
- */
-typedef struct
-{
-    uint128_element_t   element[UINT128_NUM_ELEMENTS];
-} uint128_struct_t;
 
 /*****************************************************************************
  * Look-up tables
@@ -78,11 +57,29 @@ const uint16_t mul256_reduce_table[256] =
  * Local function prototypes
  ****************************************************************************/
 
-void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE]);
-void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src);
-void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src);
-void uint128_struct_mul2(uint128_struct_t * p);
-void block_mul256(uint8_t p_block[AES_BLOCK_SIZE]);
+static void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE]);
+static void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src);
+static void uint128_struct_mul2(uint128_struct_t * p);
+static void block_mul256(uint8_t p_block[AES_BLOCK_SIZE]);
+
+/*****************************************************************************
+ * Local inline functions
+ ****************************************************************************/
+
+/*
+ * XOR for uint128_struct_t.
+ *
+ * In-place XOR all the bits of p_src into p_dst.
+ */
+static inline void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src)
+{
+    uint_fast8_t        i;
+
+    for (i = 0; i < UINT128_NUM_ELEMENTS; i++)
+    {
+        p_dst->element[i] ^= p_src->element[i];
+    }
+}
 
 /*****************************************************************************
  * Functions
@@ -97,7 +94,7 @@ void block_mul256(uint8_t p_block[AES_BLOCK_SIZE]);
 void gcm_mul(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_key[AES_BLOCK_SIZE])
 {
     uint128_struct_t    a;
-    uint128_struct_t    result = { 0 };
+    uint128_struct_t    result = UINT128_STRUCT_INIT_0;
     uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
     uint8_t             j_bit = 1u;
 
@@ -136,20 +133,20 @@ void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BL
 {
     uint8_t             i_bit = 1u;
     uint_fast8_t        j;
-    uint8_t             block[AES_BLOCK_SIZE];
+    uint128_struct_t    block;
 
     memset(p_table, 0, sizeof(*p_table));
 
     for (i_bit = 0x80u; i_bit != 0; i_bit >>= 1u)
     {
-        memset(&block[1], 0u, sizeof(block) - 1u);
-        block[0] = i_bit;
-        gcm_mul(block, p_key);
+        memset(&block, 0u, sizeof(block));
+        block.bytes[0] = i_bit;
+        gcm_mul(block.bytes, p_key);
         for (j = 255; j != 0; j--)
         {
             if (j & i_bit)
             {
-                aes_block_xor(p_table->key_data[j - 1u], block);
+                uint128_struct_xor(&p_table->key_data[j - 1u], &block);
             }
         }
     }
@@ -165,7 +162,7 @@ void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BL
 void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_table)
 {
     uint8_t             block_byte;
-    uint8_t             result[AES_BLOCK_SIZE] = { 0 };
+    uint128_struct_t    result = UINT128_STRUCT_INIT_0;
     uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
 
     /* Skip initial block_mul256(result) which is unnecessary when
@@ -174,12 +171,12 @@ void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_ta
 
     for (;;)
     {
-        block_mul256(result);
+        block_mul256(result.bytes);
 start:
         block_byte = p_block[i];
         if (block_byte)
         {
-            aes_block_xor(result, p_table->key_data[block_byte - 1u]);
+            uint128_struct_xor(&result, &p_table->key_data[block_byte - 1u]);
         }
         if (i == 0)
         {
@@ -187,7 +184,7 @@ start:
         }
         i--;
     }
-    memcpy(p_block, result, AES_BLOCK_SIZE);
+    memcpy(p_block, result.bytes, AES_BLOCK_SIZE);
 }
 
 /*
@@ -198,22 +195,22 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_
 {
     uint8_t             i_bit = 1u;
     uint_fast8_t        j;
-    uint8_t             block[AES_BLOCK_SIZE];
+    uint128_struct_t    block;
 
     memset(p_table, 0, sizeof(*p_table));
 
     for (i_bit = 0x80u; i_bit != 0; i_bit >>= 1u)
     {
-        memset(&block[1], 0u, sizeof(block) - 1u);
-        block[0] = i_bit;
-        gcm_mul(block, p_key);
+        memset(&block, 0u, sizeof(block));
+        block.bytes[0] = i_bit;
+        gcm_mul(block.bytes, p_key);
         if (i_bit >= 0x10u)
         {
             for (j = 15; j != 0; j--)
             {
-                if ((j << 4u) & i_bit)
+                if (j & (i_bit >> 4u))
                 {
-                    aes_block_xor(p_table->key_data_hi[j - 1u], block);
+                    uint128_struct_xor(&p_table->key_data_hi[j - 1u], &block);
                 }
             }
         }
@@ -223,7 +220,7 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_
             {
                 if (j & i_bit)
                 {
-                    aes_block_xor(p_table->key_data_lo[j - 1u], block);
+                    uint128_struct_xor(&p_table->key_data_lo[j - 1u], &block);
                 }
             }
         }
@@ -242,7 +239,7 @@ void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_
 {
     uint8_t             block_byte;
     uint8_t             block_nibble;
-    uint8_t             result[AES_BLOCK_SIZE] = { 0 };
+    uint128_struct_t    result = UINT128_STRUCT_INIT_0;
     uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
 
     /* Skip initial block_mul256(result) which is unnecessary when
@@ -251,20 +248,20 @@ void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_
 
     for (;;)
     {
-        block_mul256(result);
+        block_mul256(result.bytes);
 start:
         block_byte = p_block[i];
         /* High nibble */
         block_nibble = (block_byte >> 4u) & 0xFu;
         if (block_nibble)
         {
-            aes_block_xor(result, p_table->key_data_hi[block_nibble - 1u]);
+            uint128_struct_xor(&result, &p_table->key_data_hi[block_nibble - 1u]);
         }
         /* Low nibble */
         block_nibble = block_byte & 0xFu;
         if (block_nibble)
         {
-            aes_block_xor(result, p_table->key_data_lo[block_nibble - 1u]);
+            uint128_struct_xor(&result, &p_table->key_data_lo[block_nibble - 1u]);
         }
         if (i == 0)
         {
@@ -272,7 +269,7 @@ start:
         }
         i--;
     }
-    memcpy(p_block, result, AES_BLOCK_SIZE);
+    memcpy(p_block, result.bytes, AES_BLOCK_SIZE);
 }
 
 /*****************************************************************************
@@ -283,7 +280,7 @@ start:
  * Convert a multiplicand for GCM Galois 128-bit multiply into a form that can
  * be more efficiently manipulated for bit-by-bit calculation of the multiply.
  */
-void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE])
+static void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES_BLOCK_SIZE])
 {
     uint_fast8_t        i;
     uint_fast8_t        j;
@@ -306,7 +303,7 @@ void uint128_struct_from_bytes(uint128_struct_t * p_dst, const uint8_t p_src[AES
  * Convert the GCM Galois 128-bit multiply special form back into an ordinary
  * string of bytes.
  */
-void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src)
+static void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct_t * p_src)
 {
     uint_fast8_t        i;
     uint_fast8_t        j;
@@ -326,26 +323,11 @@ void uint128_struct_to_bytes(uint8_t p_dst[AES_BLOCK_SIZE], const uint128_struct
 }
 
 /*
- * XOR for uint128_struct_t.
- *
- * In-place XOR all the bits of p_src into p_dst.
- */
-void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src)
-{
-    uint_fast8_t        i;
-
-    for (i = 0; i < UINT128_NUM_ELEMENTS; i++)
-    {
-        p_dst->element[i] ^= p_src->element[i];
-    }
-}
-
-/*
  * Galois 128-bit multiply by 2.
  *
  * Multiply is done in-place on the uint128_struct_t operand.
  */
-void uint128_struct_mul2(uint128_struct_t * p)
+static void uint128_struct_mul2(uint128_struct_t * p)
 {
     uint_fast8_t        i;
     uint128_element_t   carry;
@@ -373,16 +355,22 @@ void uint128_struct_mul2(uint128_struct_t * p)
  *
  * Multiply is done in-place on the byte array of standard AES block size.
  */
-void block_mul256(uint8_t p_block[AES_BLOCK_SIZE])
+static void block_mul256(uint8_t p_block[AES_BLOCK_SIZE])
 {
+#if 0
     uint_fast8_t        i;
+#endif
     uint16_t            reduce;
 
     reduce = mul256_reduce_table[p_block[AES_BLOCK_SIZE - 1u]];
+#if 0
     for (i = AES_BLOCK_SIZE - 1u; i != 0; i--)
     {
         p_block[i] = p_block[i - 1u];
     }
+#else
+    memmove(p_block + 1, p_block, AES_BLOCK_SIZE - 1u);
+#endif
     p_block[0] = reduce >> 8u;
     p_block[1] ^= reduce;
 }
