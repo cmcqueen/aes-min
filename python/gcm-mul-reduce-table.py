@@ -12,5 +12,12 @@ for i in range(8):
 for j in range(256):
     if j and (j % 16) == 0:
         print()
-    print('0x{:04X}u, '.format(reduce_table[j]), end='')
+    reduce_value = reduce_table[j]
+    if False:
+        # Swap endianness.
+        reduce_value = ((reduce_value & 0xFF) << 8) | ((reduce_value >> 8) & 0xFF)
+    if True:
+        print('0x{:04X}u, '.format(reduce_value), end='')
+    else:
+        print('{{ {{ 0x{:02X}u, 0x{:02X}u, }} }}, '.format(reduce_value >> 8, reduce_value & 0xFF), end='')
 print()
