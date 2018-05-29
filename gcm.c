@@ -96,7 +96,7 @@ start:
  * Given a key, pre-calculate the large table that is needed for
  * gcm_mul_table(), the 8-bit table-driven implementation of GCM multiplication.
  */
-void gcm_mul_prepare_table(gcm_mul_table_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE])
+void gcm_mul_prepare_table8(gcm_mul_table8_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE])
 {
     uint8_t             i_bit = 1u;
     uint_fast8_t        j;
@@ -126,7 +126,7 @@ void gcm_mul_prepare_table(gcm_mul_table_t * restrict p_table, const uint8_t p_k
  * It is the fastest implementation, but requires a large table pre-calculated
  * from the key.
  */
-void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_table)
+void gcm_mul_table8(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table8_t * p_table)
 {
     uint8_t             block_byte;
     uint128_struct_t    result = UINT128_STRUCT_INIT_0;

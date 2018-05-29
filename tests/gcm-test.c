@@ -145,42 +145,42 @@ static int gcm_mul_test(void)
     return 0;
 }
 
-static int gcm_mul_table_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t b[AES_BLOCK_SIZE], const uint8_t correct_result[AES_BLOCK_SIZE])
+static int gcm_mul_table8_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t b[AES_BLOCK_SIZE], const uint8_t correct_result[AES_BLOCK_SIZE])
 {
-    gcm_mul_table_t mul_table;
+    gcm_mul_table8_t mul_table;
     size_t  j;
     int     result;
     uint8_t gmul_out[AES_BLOCK_SIZE];
 
     /* Prepare the table. */
-    //printf("gcm_mul_prepare_table()\n");
-    gcm_mul_prepare_table(&mul_table, b);
+    //printf("gcm_mul_prepare_table8()\n");
+    gcm_mul_prepare_table8(&mul_table, b);
 
     /* Do the multiply. */
     memcpy(gmul_out, a, AES_BLOCK_SIZE);
-    //printf("gcm_mul_table()\n");
-    gcm_mul_table(gmul_out, &mul_table);
+    //printf("gcm_mul_table8()\n");
+    gcm_mul_table8(gmul_out, &mul_table);
 
     result = memcmp(gmul_out, correct_result, AES_BLOCK_SIZE) ? 1 : 0;
     if (result)
     {
-        printf("gcm_mul_prepare_table() result:\n");
+        printf("gcm_mul_prepare_table8() result:\n");
         for (j = 0; j < 255; j++)
         {
             printf("%02zX: ", j + 1);
             print_block_hex(mul_table.key_data[j].bytes, 16u);
         }
 
-        printf("gcm_mul_table() a:\n");
+        printf("gcm_mul_table8() a:\n");
         print_block_hex(a, 16u);
 
-        printf("gcm_mul_table() b:\n");
+        printf("gcm_mul_table8() b:\n");
         print_block_hex(b, 16u);
 
-        printf("gcm_mul_table() expected:\n");
+        printf("gcm_mul_table8() expected:\n");
         print_block_hex(correct_result, 16u);
 
-        printf("gcm_mul_table() result:\n");
+        printf("gcm_mul_table8() result:\n");
         print_block_hex(gmul_out, 16u);
 
         return result;
@@ -188,19 +188,19 @@ static int gcm_mul_table_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t
     return 0;
 }
 
-static int gcm_mul_table_test(void)
+static int gcm_mul_table8_test(void)
 {
     size_t  i;
     int     result;
 
     for (i = 0; i < (sizeof(mul_test_vectors)/sizeof(mul_test_vectors[0])); i++)
     {
-        result = gcm_mul_table_test_one(mul_test_vectors[i].a, mul_test_vectors[i].b, mul_test_vectors[i].result);
+        result = gcm_mul_table8_test_one(mul_test_vectors[i].a, mul_test_vectors[i].b, mul_test_vectors[i].result);
         if (result)
             return result;
 
         /* Swapped. */
-        result = gcm_mul_table_test_one(mul_test_vectors[i].b, mul_test_vectors[i].a, mul_test_vectors[i].result);
+        result = gcm_mul_table8_test_one(mul_test_vectors[i].b, mul_test_vectors[i].a, mul_test_vectors[i].result);
         if (result)
             return result;
     }
@@ -287,7 +287,7 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
     uint8_t             aes_work[AES_BLOCK_SIZE];
     uint8_t             ghash_key[AES_BLOCK_SIZE];
     uint8_t             ghash_work[AES_BLOCK_SIZE];
-    gcm_mul_table_t     mul_table8;
+    gcm_mul_table8_t    mul_table8;
     gcm_mul_table4_t    mul_table4;
 
     for (i = 0; i < GCM_NUM_VECTORS; i++)
@@ -309,7 +309,7 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
                 gcm_mul_prepare_table4(&mul_table4, ghash_key);
                 break;
             case GCM_MUL_TABLE8:
-                gcm_mul_prepare_table(&mul_table8, ghash_key);
+                gcm_mul_prepare_table8(&mul_table8, ghash_key);
                 break;
         }
 
@@ -334,7 +334,7 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
                         gcm_mul_table4(ghash_work, &mul_table4);
                         break;
                     case GCM_MUL_TABLE8:
-                        gcm_mul_table(ghash_work, &mul_table8);
+                        gcm_mul_table8(ghash_work, &mul_table8);
                         break;
                 }
 
@@ -371,7 +371,7 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
                         gcm_mul_table4(ghash_work, &mul_table4);
                         break;
                     case GCM_MUL_TABLE8:
-                        gcm_mul_table(ghash_work, &mul_table8);
+                        gcm_mul_table8(ghash_work, &mul_table8);
                         break;
                 }
 
@@ -429,7 +429,7 @@ int main(int argc, char **argv)
     if (result)
         return result;
 
-    result = gcm_mul_table_test();
+    result = gcm_mul_table8_test();
     if (result)
         return result;
 
