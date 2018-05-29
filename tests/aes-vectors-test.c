@@ -50,7 +50,6 @@ typedef struct
 
 static bool test_aes(const vector_data_t * p_vector_data, bool do_otfks)
 {
-    size_t  i;
     uint8_t encrypt_key_schedule[AES128_KEY_SCHEDULE_SIZE] = {};
     uint8_t otfks_encrypt_key_start[AES128_KEY_SIZE] = {};
     uint8_t otfks_decrypt_key_start[AES128_KEY_SIZE] = {};

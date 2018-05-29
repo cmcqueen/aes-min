@@ -164,7 +164,6 @@ void gcm_mul_prepare_table(gcm_mul_table_t * p_table, const uint8_t p_key[AES_BL
  */
 void gcm_mul_table(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table_t * p_table)
 {
-    uint128_struct_t    a;
     uint8_t             block_byte;
     uint8_t             result[AES_BLOCK_SIZE] = { 0 };
     uint_fast8_t        i = AES_BLOCK_SIZE - 1u;
@@ -241,7 +240,6 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * p_table, const uint8_t p_key[AES_
  */
 void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_table)
 {
-    uint128_struct_t    a;
     uint8_t             block_byte;
     uint8_t             block_nibble;
     uint8_t             result[AES_BLOCK_SIZE] = { 0 };
@@ -350,7 +348,6 @@ void uint128_struct_xor(uint128_struct_t * p_dst, const uint128_struct_t * p_src
 void uint128_struct_mul2(uint128_struct_t * p)
 {
     uint_fast8_t        i;
-    uint128_element_t   temp;
     uint128_element_t   carry;
     uint128_element_t   next_carry;
 

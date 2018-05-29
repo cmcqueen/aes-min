@@ -101,7 +101,6 @@ static const mul_test_vector_t mul_test_vectors[] =
 
 static int gcm_mul_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t b[AES_BLOCK_SIZE], const uint8_t correct_result[AES_BLOCK_SIZE])
 {
-    size_t  i;
     int     result;
     uint8_t gmul_out[AES_BLOCK_SIZE];
 
@@ -131,7 +130,6 @@ static int gcm_mul_test(void)
 {
     size_t  i;
     int     result;
-    uint8_t gmul_out[AES_BLOCK_SIZE];
 
     for (i = 0; i < (sizeof(mul_test_vectors)/sizeof(mul_test_vectors[0])); i++)
     {
@@ -305,6 +303,8 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
         aes128_otfks_encrypt(ghash_key, aes_key);
         switch (mul_impl)
         {
+            case GCM_MUL_BIT_BY_BIT:
+                break;
             case GCM_MUL_TABLE4:
                 gcm_mul_prepare_table4(&mul_table4, ghash_key);
                 break;
