@@ -300,14 +300,20 @@ static void uint128_struct_mul2(uint128_struct_t * restrict p)
     uint128_element_t   carry;
     uint128_element_t   next_carry;
 
-    if (p->element[UINT128_NUM_ELEMENTS - 1u] & 1u)
-    {
-        carry = (0xE1u << (UINT128_ELEMENT_SIZE_BITS - 8u));
-    }
-    else
-    {
-        carry = 0u;
-    }
+    /*
+     * This expression is intended to be timing invariant to prevent a timing
+     * attack due to execution timing dependent on the bits of the GHASH key.
+     * Check generated assembler from the compiler to confirm it.
+     * This could be expressed as an 'if' statement, but then it's less likely
+     * to be timing invariant.
+     *
+     * (0xE1u << (UINT128_ELEMENT_SIZE_BITS - 8u)) is the reduction poly bits.
+     * (p->element[UINT128_NUM_ELEMENTS - 1u] & 1u) is the check of the MSbit
+     * to determine if it's necessary to XOR the reduction poly.
+     * (-(p->element[UINT128_NUM_ELEMENTS - 1u] & 1u)) turns it into a mask for
+     * the bitwise AND.
+     */
+    carry = (0xE1u << (UINT128_ELEMENT_SIZE_BITS - 8u)) & (-(p->element[UINT128_NUM_ELEMENTS - 1u] & 1u));
 
     goto start;
     for (i = 0; i < UINT128_NUM_ELEMENTS - 1u; i++)
