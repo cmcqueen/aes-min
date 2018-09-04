@@ -27,7 +27,7 @@
 /* Set an element type that is efficient on the target platform.
  * Ensure GCM_U128_ELEMENT_SIZE is suitably set to match.
  * unsigned int is a reasonable default, but it could be uint16_t, uint8_t.
- * If uint8_t is used, uint128_struct_from_bytes() etc could simply be
+ * If uint8_t is used, gcm_u128_struct_from_bytes() etc could simply be
  * replaced by memcpy(). */
 typedef unsigned int gcm_u128_element_t;
 
