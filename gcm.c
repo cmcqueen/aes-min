@@ -313,7 +313,7 @@ static void uint128_struct_mul2(gcm_u128_struct_t * restrict p)
      * (-(p->element[GCM_U128_NUM_ELEMENTS - 1u] & 1u)) turns it into a mask for
      * the bitwise AND.
      */
-    carry = (0xE1u << (GCM_U128_ELEMENT_SIZE_BITS - 8u)) & (-(p->element[GCM_U128_NUM_ELEMENTS - 1u] & 1u));
+    carry = ((gcm_u128_element_t)0xE1u << (GCM_U128_ELEMENT_SIZE_BITS - 8u)) & (-(p->element[GCM_U128_NUM_ELEMENTS - 1u] & 1u));
 
     goto start;
     for (i = 0; i < GCM_U128_NUM_ELEMENTS - 1u; i++)
