@@ -39,6 +39,8 @@ Encryption and decryption are tested against some files in the official [test ve
 
 The test vectors were parsed and converted to C data structures using a Python program.
 
+For AES-GCM mode, the Galois 128-bit multiply is tested against [these AES-GCM test vectors from NIST][4].
+
 When using autotools, run the tests via:
 
     make check
@@ -46,10 +48,11 @@ When using autotools, run the tests via:
 License
 -------
 
-This code is released under the MIT license. See [`LICENSE.txt`][4] for details.
+This code is released under the MIT license. See [`LICENSE.txt`][5] for details.
 
 
 [1]: http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 [2]: https://en.wikipedia.org/wiki/Galois/Counter_Mode
 [3]: http://csrc.nist.gov/groups/STM/cavp/documents/aes/KAT_AES.zip
-[4]: LICENSE.txt
+[4]: https://csrc.nist.gov/csrc/media/projects/cryptographic-algorithm-validation-program/documents/mac/gcmtestvectors.zip
+[5]: LICENSE.txt
