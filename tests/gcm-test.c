@@ -111,16 +111,16 @@ static int gcm_mul_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_t b[AES
     if (result)
     {
         printf("gcm_mul() a:\n");
-        print_block_hex(a, 16u);
+        print_block_hex(a, AES_BLOCK_SIZE);
 
         printf("gcm_mul() b:\n");
-        print_block_hex(b, 16u);
+        print_block_hex(b, AES_BLOCK_SIZE);
 
         printf("gcm_mul() expected:\n");
-        print_block_hex(correct_result, 16u);
+        print_block_hex(correct_result, AES_BLOCK_SIZE);
 
         printf("gcm_mul() result:\n");
-        print_block_hex(gmul_out, 16u);
+        print_block_hex(gmul_out, AES_BLOCK_SIZE);
         return result;
     }
     return 0;
@@ -168,20 +168,20 @@ static int gcm_mul_table8_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_
         for (j = 0; j < 255; j++)
         {
             printf("%02zX: ", j + 1);
-            print_block_hex(mul_table.key_data[j].bytes, 16u);
+            print_block_hex(mul_table.key_data[j].bytes, AES_BLOCK_SIZE);
         }
 
         printf("gcm_mul_table8() a:\n");
-        print_block_hex(a, 16u);
+        print_block_hex(a, AES_BLOCK_SIZE);
 
         printf("gcm_mul_table8() b:\n");
-        print_block_hex(b, 16u);
+        print_block_hex(b, AES_BLOCK_SIZE);
 
         printf("gcm_mul_table8() expected:\n");
-        print_block_hex(correct_result, 16u);
+        print_block_hex(correct_result, AES_BLOCK_SIZE);
 
         printf("gcm_mul_table8() result:\n");
-        print_block_hex(gmul_out, 16u);
+        print_block_hex(gmul_out, AES_BLOCK_SIZE);
 
         return result;
     }
@@ -230,25 +230,25 @@ static int gcm_mul_table4_test_one(const uint8_t a[AES_BLOCK_SIZE], const uint8_
         for (j = 0; j < 15; j++)
         {
             printf("Hi %02zX: ", j + 1);
-            print_block_hex(mul_table.key_data_hi[j].bytes, 16u);
+            print_block_hex(mul_table.key_data_hi[j].bytes, AES_BLOCK_SIZE);
         }
         for (j = 0; j < 15; j++)
         {
             printf("Lo %02zX: ", j + 1);
-            print_block_hex(mul_table.key_data_lo[j].bytes, 16u);
+            print_block_hex(mul_table.key_data_lo[j].bytes, AES_BLOCK_SIZE);
         }
 
         printf("gcm_mul_table4() a:\n");
-        print_block_hex(a, 16u);
+        print_block_hex(a, AES_BLOCK_SIZE);
 
         printf("gcm_mul_table4() b:\n");
-        print_block_hex(b, 16u);
+        print_block_hex(b, AES_BLOCK_SIZE);
 
         printf("gcm_mul_table4() expected:\n");
-        print_block_hex(correct_result, 16u);
+        print_block_hex(correct_result, AES_BLOCK_SIZE);
 
         printf("gcm_mul_table4() result:\n");
-        print_block_hex(gmul_out, 16u);
+        print_block_hex(gmul_out, AES_BLOCK_SIZE);
 
         return result;
     }
