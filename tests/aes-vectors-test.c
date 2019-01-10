@@ -10,7 +10,7 @@
  * Includes
  ****************************************************************************/
 
-#include "aes.h"
+#include "aes-min.h"
 //#include "aes-otfks.h"
 #include "aes-print-block.h"
 

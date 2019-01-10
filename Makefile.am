@@ -10,11 +10,9 @@ lib_LTLIBRARIES = lib@PACKAGE_NAME@.la
 
 
 library_include_aes_mindir=$(includedir)/@PACKAGE_NAME@
-library_include_aes_min_HEADERS = aes.h
-lib@PACKAGE_NAME@_la_SOURCES = aes-encrypt.c aes-key-schedule.c aes-shift-rows.c aes-mix-columns.c
-lib@PACKAGE_NAME@_la_SOURCES += aes-otfks-encrypt.c aes-key-schedule-round.c
-lib@PACKAGE_NAME@_la_SOURCES += aes-decrypt.c aes-shift-rows-inv.c aes-mix-columns-inv.c
-lib@PACKAGE_NAME@_la_SOURCES += aes-otfks-decrypt.c
+library_include_aes_min_HEADERS = aes-min.h
+lib@PACKAGE_NAME@_la_SOURCES = aes-min.c aes-shift-rows.c aes-mix-columns.c
+lib@PACKAGE_NAME@_la_SOURCES += aes-shift-rows-inv.c aes-mix-columns-inv.c
 if ENABLE_SBOX_SMALL
 lib@PACKAGE_NAME@_la_SOURCES += aes-sbox-small.c aes-sbox-inv-small.c aes-mul.c aes-inv.c
 else

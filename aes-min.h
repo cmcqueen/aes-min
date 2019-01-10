@@ -1,12 +1,12 @@
 /*****************************************************************************
- * aes.h
+ * aes-min.h
  *
  * Minimal byte-oriented AES-128 encryption/decryption implementation suitable
  * for small microprocessors.
  ****************************************************************************/
 
-#ifndef AES_H
-#define AES_H
+#ifndef AES_MIN_H
+#define AES_MIN_H
 
 /*****************************************************************************
  * Includes
@@ -43,5 +43,5 @@ void aes128_otfks_decrypt(uint8_t p_block[AES_BLOCK_SIZE], uint8_t p_decrypt_sta
 void aes128_otfks_decrypt_start_key(uint8_t p_key[AES128_KEY_SIZE]);
 
 
-#endif /* !defined(AES_H) */
+#endif /* !defined(AES_MIN_H) */
 

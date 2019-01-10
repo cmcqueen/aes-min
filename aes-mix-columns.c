@@ -8,7 +8,7 @@
  * Includes
  ****************************************************************************/
 
-#include "aes.h"
+#include "aes-min.h"
 #include "aes-mix-columns.h"
 #include "aes-mul2.h"
 

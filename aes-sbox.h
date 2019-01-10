@@ -11,7 +11,7 @@
  * Includes
  ****************************************************************************/
 
-#include "aes.h"
+#include "aes-min.h"
 
 #include <stdint.h>
 
