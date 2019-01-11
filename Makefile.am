@@ -10,9 +10,9 @@ lib_LTLIBRARIES = lib@PACKAGE_NAME@.la
 
 
 library_include_aes_mindir=$(includedir)/@PACKAGE_NAME@
-library_include_aes_min_HEADERS = aes-min.h
+library_include_aes_min_HEADERS = aes-min.h gcm.h
 lib@PACKAGE_NAME@_la_SOURCES = aes-min.c
-lib@PACKAGE_NAME@_la_SOURCES += gcm.c gcm.h
+lib@PACKAGE_NAME@_la_SOURCES += gcm.c
 lib@PACKAGE_NAME@_la_LDFLAGS = -version-info @LIB_SO_VERSION@
 
 pkgconfigdir = $(libdir)/pkgconfig
