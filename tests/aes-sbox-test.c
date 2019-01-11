@@ -1,8 +1,11 @@
 
-#include "aes-sbox.h"
+#include "aes-min.h"
 #include "aes-print-block.h"
 
 #include <string.h>
+
+
+void _aes_sbox_apply_block_for_test(uint8_t p_block[AES_BLOCK_SIZE]);
 
 
 static const uint8_t sbox_ref[256u] =
@@ -40,7 +43,7 @@ int main(int argc, char **argv)
     }
     for (i = 0; i < 256u; i += AES_BLOCK_SIZE)
     {
-        aes_sbox_apply_block(&sbox_out[i]);
+        _aes_sbox_apply_block_for_test(&sbox_out[i]);
     }
 
     printf("s-box array:\n");

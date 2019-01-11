@@ -1,6 +1,6 @@
 
 #include "gcm.h"
-#include "aes-block-xor.h"
+#include "aes-min.h"
 #include "aes-print-block.h"
 
 #include "gcm-test-vectors.h"

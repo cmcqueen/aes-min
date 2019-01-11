@@ -29,6 +29,24 @@
 #define AES128_KEY_SCHEDULE_SIZE    (AES_BLOCK_SIZE * (AES128_NUM_ROUNDS + 1u))
 
 /*****************************************************************************
+ * Inline functions
+ ****************************************************************************/
+
+/*
+ * XOR the specified round key into the AES block.
+ * Fixed block size.
+ */
+static inline void aes_block_xor(uint8_t p_block[AES_BLOCK_SIZE], const uint8_t p_data[AES_BLOCK_SIZE])
+{
+    uint_fast8_t    i;
+
+    for (i = 0; i < AES_BLOCK_SIZE; ++i)
+    {
+        p_block[i] ^= p_data[i];
+    }
+}
+
+/*****************************************************************************
  * Function prototypes
  ****************************************************************************/
 
@@ -44,4 +62,3 @@ void aes128_otfks_decrypt_start_key(uint8_t p_key[AES128_KEY_SIZE]);
 
 
 #endif /* !defined(AES_MIN_H) */
-

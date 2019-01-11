@@ -1,8 +1,9 @@
 
-#include "aes-inv.h"
 #include "aes-print-block.h"
 
 #include <string.h>
+
+uint8_t _aes_inv_for_test(uint8_t a);
 
 /* See:
  * gf2_8_inv[] in http://www.lomont.org/Software/Misc/AES/Rijndael.cpp
@@ -38,7 +39,7 @@ int main(int argc, char **argv)
 
     for (i = 0; i < 256u; i++)
     {
-        inv_out[i] = aes_inv(i);
+        inv_out[i] = _aes_inv_for_test(i);
     }
 
     printf("AES Galois inverse array:\n");
