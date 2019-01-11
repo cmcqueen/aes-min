@@ -13,6 +13,9 @@ library_include_aes_mindir=$(includedir)/@PACKAGE_NAME@
 library_include_aes_min_HEADERS = aes-min.h gcm.h
 lib@PACKAGE_NAME@_la_SOURCES = aes-min.c
 lib@PACKAGE_NAME@_la_SOURCES += gcm.c
+if ENABLE_SBOX_SMALL
+lib@PACKAGE_NAME@_la_CFLAGS = -DENABLE_SBOX_SMALL
+endif
 lib@PACKAGE_NAME@_la_LDFLAGS = -version-info @LIB_SO_VERSION@
 
 pkgconfigdir = $(libdir)/pkgconfig
