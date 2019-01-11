@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
-AC_INIT([aes-min], [0.3.0]) #set project name and version
+AC_INIT([aes-min], [0.3.1]) #set project name and version
 
 # Put autotools auxiliary files in subdirectories to reduce clutter:
 AC_CONFIG_AUX_DIR([build-aux])
@@ -16,7 +16,7 @@ AC_CONFIG_HEADERS([config.h])
 
 # library version as current:revision:age
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-AC_SUBST([LIB_SO_VERSION], [5:0:0])
+AC_SUBST([LIB_SO_VERSION], [5:1:0])
 
 # Enable "automake" to simplify creating makefiles:
 AM_INIT_AUTOMAKE([foreign subdir-objects -Wall -Werror -Wno-portability])
