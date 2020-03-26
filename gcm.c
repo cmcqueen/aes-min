@@ -98,17 +98,17 @@ start:
  */
 void gcm_mul_prepare_table8(gcm_mul_table8_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE])
 {
-    uint8_t             i_bit = 1u;
-    uint_fast8_t        j;
+    gcm_u128_struct_t   a;
     gcm_u128_struct_t   block;
+    uint8_t             i_bit = 0x80u;
+    uint_fast8_t        j;
 
     memset(p_table, 0, sizeof(*p_table));
+    gcm_u128_struct_from_bytes(&a, p_key);
+    memcpy(block.bytes, p_key, AES_BLOCK_SIZE);
 
-    for (i_bit = 0x80u; i_bit != 0; i_bit >>= 1u)
+    for (;;)
     {
-        memset(&block, 0u, sizeof(block));
-        block.bytes[0] = i_bit;
-        gcm_mul(block.bytes, p_key);
         for (j = 255; j != 0; j--)
         {
             if (j & i_bit)
@@ -116,6 +116,11 @@ void gcm_mul_prepare_table8(gcm_mul_table8_t * restrict p_table, const uint8_t p
                 uint128_struct_xor(&p_table->key_data[j - 1u], &block);
             }
         }
+        i_bit >>= 1u;
+        if (i_bit == 0)
+            break;
+        uint128_struct_mul2(&a);
+        gcm_u128_struct_to_bytes(block.bytes, &a);
     }
 }
 
@@ -160,17 +165,17 @@ start:
  */
 void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE])
 {
-    uint8_t             i_bit = 1u;
-    uint_fast8_t        j;
+    gcm_u128_struct_t   a;
     gcm_u128_struct_t   block;
+    uint8_t             i_bit = 0x80u;
+    uint_fast8_t        j;
 
     memset(p_table, 0, sizeof(*p_table));
+    gcm_u128_struct_from_bytes(&a, p_key);
+    memcpy(block.bytes, p_key, AES_BLOCK_SIZE);
 
-    for (i_bit = 0x80u; i_bit != 0; i_bit >>= 1u)
+    for (;;)
     {
-        memset(&block, 0u, sizeof(block));
-        block.bytes[0] = i_bit;
-        gcm_mul(block.bytes, p_key);
         if (i_bit >= 0x10u)
         {
             for (j = 15; j != 0; j--)
@@ -191,6 +196,12 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p
                 }
             }
         }
+
+        i_bit >>= 1u;
+        if (i_bit == 0)
+            break;
+        uint128_struct_mul2(&a);
+        gcm_u128_struct_to_bytes(block.bytes, &a);
     }
 }
 
