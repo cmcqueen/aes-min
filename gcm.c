@@ -100,16 +100,16 @@ void gcm_mul_prepare_table8(gcm_mul_table8_t * restrict p_table, const uint8_t p
 {
     gcm_u128_struct_t   a;
     gcm_u128_struct_t   block;
-    uint8_t             i_bit = 0x80u;
+    uint_fast8_t        i_bit = 0x80u;
     uint_fast8_t        j;
 
-    memset(p_table, 0, sizeof(*p_table));
+    memset(p_table, 0u, sizeof(*p_table));
     gcm_u128_struct_from_bytes(&a, p_key);
     memcpy(block.bytes, p_key, AES_BLOCK_SIZE);
 
     for (;;)
     {
-        for (j = 255; j != 0; j--)
+        for (j = 255u; j != 0u; j--)
         {
             if (j & i_bit)
             {
@@ -117,7 +117,7 @@ void gcm_mul_prepare_table8(gcm_mul_table8_t * restrict p_table, const uint8_t p
             }
         }
         i_bit >>= 1u;
-        if (i_bit == 0)
+        if (i_bit == 0u)
             break;
         uint128_struct_mul2(&a);
         gcm_u128_struct_to_bytes(block.bytes, &a);
@@ -150,7 +150,7 @@ start:
         {
             uint128_struct_xor(&result, &p_table->key_data[block_byte - 1u]);
         }
-        if (i == 0)
+        if (i == 0u)
         {
             break;
         }
@@ -167,10 +167,10 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p
 {
     gcm_u128_struct_t   a;
     gcm_u128_struct_t   block;
-    uint8_t             i_bit = 0x80u;
+    uint_fast8_t        i_bit = 0x80u;
     uint_fast8_t        j;
 
-    memset(p_table, 0, sizeof(*p_table));
+    memset(p_table, 0u, sizeof(*p_table));
     gcm_u128_struct_from_bytes(&a, p_key);
     memcpy(block.bytes, p_key, AES_BLOCK_SIZE);
 
@@ -178,7 +178,7 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p
     {
         if (i_bit >= 0x10u)
         {
-            for (j = 15; j != 0; j--)
+            for (j = 15u; j != 0u; j--)
             {
                 if (j & (i_bit >> 4u))
                 {
@@ -188,7 +188,7 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p
         }
         else
         {
-            for (j = 15; j != 0; j--)
+            for (j = 15u; j != 0u; j--)
             {
                 if (j & i_bit)
                 {
@@ -198,7 +198,7 @@ void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p
         }
 
         i_bit >>= 1u;
-        if (i_bit == 0)
+        if (i_bit == 0u)
             break;
         uint128_struct_mul2(&a);
         gcm_u128_struct_to_bytes(block.bytes, &a);
@@ -241,7 +241,7 @@ start:
         {
             uint128_struct_xor(&result, &p_table->key_data_lo[block_nibble - 1u]);
         }
-        if (i == 0)
+        if (i == 0u)
         {
             break;
         }
