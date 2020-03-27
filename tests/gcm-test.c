@@ -24,9 +24,9 @@
 
 typedef enum
 {
-    GCM_MUL_BIT_BY_BIT,
-    GCM_MUL_TABLE4,
-    GCM_MUL_TABLE8,
+    TEST_GCM_MUL_BIT_BY_BIT,
+    TEST_GCM_MUL_TABLE4,
+    TEST_GCM_MUL_TABLE8,
 } gcm_mul_implementation_t;
 
 typedef struct
@@ -303,12 +303,12 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
         aes128_otfks_encrypt(ghash_key, aes_key);
         switch (mul_impl)
         {
-            case GCM_MUL_BIT_BY_BIT:
+            case TEST_GCM_MUL_BIT_BY_BIT:
                 break;
-            case GCM_MUL_TABLE4:
+            case TEST_GCM_MUL_TABLE4:
                 gcm_mul_prepare_table4(&mul_table4, ghash_key);
                 break;
-            case GCM_MUL_TABLE8:
+            case TEST_GCM_MUL_TABLE8:
                 gcm_mul_prepare_table8(&mul_table8, ghash_key);
                 break;
         }
@@ -327,13 +327,13 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
                 aes_block_xor(ghash_work, data_block);
                 switch (mul_impl)
                 {
-                    case GCM_MUL_BIT_BY_BIT:
+                    case TEST_GCM_MUL_BIT_BY_BIT:
                         gcm_mul(ghash_work, ghash_key);
                         break;
-                    case GCM_MUL_TABLE4:
+                    case TEST_GCM_MUL_TABLE4:
                         gcm_mul_table4(ghash_work, &mul_table4);
                         break;
-                    case GCM_MUL_TABLE8:
+                    case TEST_GCM_MUL_TABLE8:
                         gcm_mul_table8(ghash_work, &mul_table8);
                         break;
                 }
@@ -364,13 +364,13 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
                 aes_block_xor(ghash_work, data_block);
                 switch (mul_impl)
                 {
-                    case GCM_MUL_BIT_BY_BIT:
+                    case TEST_GCM_MUL_BIT_BY_BIT:
                         gcm_mul(ghash_work, ghash_key);
                         break;
-                    case GCM_MUL_TABLE4:
+                    case TEST_GCM_MUL_TABLE4:
                         gcm_mul_table4(ghash_work, &mul_table4);
                         break;
-                    case GCM_MUL_TABLE8:
+                    case TEST_GCM_MUL_TABLE8:
                         gcm_mul_table8(ghash_work, &mul_table8);
                         break;
                 }
@@ -437,13 +437,13 @@ int main(int argc, char **argv)
     if (result)
         return result;
 
-    result = gcm_test(GCM_MUL_BIT_BY_BIT);
+    result = gcm_test(TEST_GCM_MUL_BIT_BY_BIT);
     if (result)
         return result;
-    result = gcm_test(GCM_MUL_TABLE4);
+    result = gcm_test(TEST_GCM_MUL_TABLE4);
     if (result)
         return result;
-    result = gcm_test(GCM_MUL_TABLE8);
+    result = gcm_test(TEST_GCM_MUL_TABLE8);
     if (result)
         return result;
 
