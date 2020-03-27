@@ -10,9 +10,9 @@ lib_LTLIBRARIES = lib@PACKAGE_NAME@.la
 
 
 library_include_aes_mindir=$(includedir)/@PACKAGE_NAME@
-library_include_aes_min_HEADERS = aes-min.h gcm.h
+library_include_aes_min_HEADERS = aes-min.h gcm-mul.h
 lib@PACKAGE_NAME@_la_SOURCES = aes-min.c
-lib@PACKAGE_NAME@_la_SOURCES += gcm.c
+lib@PACKAGE_NAME@_la_SOURCES += gcm-mul.c
 if ENABLE_SBOX_SMALL
 lib@PACKAGE_NAME@_la_CFLAGS = -DENABLE_SBOX_SMALL
 endif
@@ -45,5 +45,5 @@ aes_encrypt_test_LDADD = lib@PACKAGE_NAME@.la
 aes_vectors_test_SOURCES = tests/aes-vectors-test.c tests/aes-test-vectors.h aes-print-block.h
 aes_vectors_test_LDADD = lib@PACKAGE_NAME@.la
 
-gcm_test_SOURCES = tests/gcm-test.c tests/gcm-test-vectors.c tests/gcm-test-vectors.h gcm.h aes-print-block.h
+gcm_test_SOURCES = tests/gcm-test.c tests/gcm-test-vectors.c tests/gcm-test-vectors.h gcm-mul.h aes-print-block.h
 gcm_test_LDADD = lib@PACKAGE_NAME@.la

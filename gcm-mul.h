@@ -1,11 +1,11 @@
 /*****************************************************************************
- * gcm.h
+ * gcm-mul.h
  *
  * Functions to support GCM mode.
  ****************************************************************************/
 
-#ifndef GCM_H
-#define GCM_H
+#ifndef GCM_MUL_H
+#define GCM_MUL_H
 
 /*****************************************************************************
  * Includes
@@ -67,4 +67,4 @@ void gcm_mul_table8(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table8_t * p_
 void gcm_mul_prepare_table4(gcm_mul_table4_t * restrict p_table, const uint8_t p_key[AES_BLOCK_SIZE]);
 void gcm_mul_table4(uint8_t p_block[AES_BLOCK_SIZE], const gcm_mul_table4_t * p_table);
 
-#endif /* !defined(GCM_H) */
+#endif /* !defined(GCM_MUL_H) */

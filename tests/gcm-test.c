@@ -1,5 +1,5 @@
 
-#include "gcm.h"
+#include "gcm-mul.h"
 #include "aes-min.h"
 #include "aes-print-block.h"
 
