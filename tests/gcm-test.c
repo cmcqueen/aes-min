@@ -387,7 +387,18 @@ static int gcm_test(gcm_mul_implementation_t mul_impl)
         ghash_lengths.padding2 = 0;
         ghash_lengths.pt_len = htobe32(gcm_test_vectors[i].pt_len * 8u);
         aes_block_xor(ghash_work, ghash_lengths.bytes);
-        gcm_mul(ghash_work, ghash_key);
+        switch (mul_impl)
+        {
+            case TEST_GCM_MUL_BIT_BY_BIT:
+                gcm_mul(ghash_work, ghash_key);
+                break;
+            case TEST_GCM_MUL_TABLE4:
+                gcm_mul_table4(ghash_work, &mul_table4);
+                break;
+            case TEST_GCM_MUL_TABLE8:
+                gcm_mul_table8(ghash_work, &mul_table8);
+                break;
+        }
 
         /* Final AES operation that is XORed with final GHASH value. */
         iv_block.ctr = htobe32(1);
